@@ -3,6 +3,7 @@ import numpy as np
 import torch as T
 import torch.nn as nn
 
+from networks import MLPNet
 
 
 class SoftQFunction(nn.Module):
