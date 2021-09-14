@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import torch as T
 
@@ -10,7 +11,7 @@ class ReplayBuffer: # Done
     """
     def __init__(self, obs_dim, act_dim, max_size, seed, device):
         print('Initialize ReplayBuffer!')
-        np.random.seed(seed), T.manual_seed(seed)
+        random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
         self.device = device
 
         self.observation_buffer = np.zeros(max_size, obs_dim, dtype=np.float32)
