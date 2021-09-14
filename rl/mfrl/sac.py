@@ -5,7 +5,7 @@ from policy import StochasticPolicy
 from q_function import SoftQFunction
 
 
-class ActorCritic:
+class ActorCritic: # Done
     """
     An entity contains both the actor (policy) that acts on the environment,
     and a critic (Q-function) that evaluate that state-action given apolicy
