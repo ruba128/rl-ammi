@@ -37,6 +37,7 @@ def main(configs):
     # experiment = SAC(configs)
 
     # experiment.learn()
+    # experiment.evaluate()
 
     print('\n')
     print('...End Soft Actor-Critic experiment')
