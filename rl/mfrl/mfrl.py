@@ -14,7 +14,10 @@ class MFRL:
     def _set_env(self):
         pass
 
-    def _set_RB(self):
+    def _set_replay_buffer(self):
+        pass
+
+    def initialize_learning(self):
         pass
 
     def internact(self):
