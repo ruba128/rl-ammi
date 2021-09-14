@@ -40,7 +40,7 @@ configurations = {
         'automatic_entropy': True,
         'target_entropy': 'auto',
         'network': {
-            'net_arch': [256,256],
+            'arch': [256,256],
             'activation': 'ReLU',
             'output_activation': 'nn.Identity',
             'optimizer': "Adam",
@@ -54,7 +54,7 @@ configurations = {
         'gamma': 0.99,
         'tau': 5e-3,
         'network': {
-            'net_arch': [256,256],
+            'arch': [256,256],
             'activation': 'ReLU',
             'output_activation': 'nn.Identity',
             'optimizer': "Adam",
