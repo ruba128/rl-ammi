@@ -8,7 +8,7 @@ from q_function import SoftQFunction
 class ActorCritic: # Done
     """
     An entity contains both the actor (policy) that acts on the environment,
-    and a critic (Q-function) that evaluate that state-action given apolicy
+    and a critic (Q-function) that evaluate that state-action given a policy.
     """
     def __init__(self,
                  obs_dim, act_dim,
@@ -45,9 +45,29 @@ class ActorCritic: # Done
 
 
 class SAC(MFRL):
+    """
+    Algorithm: Soft Actor-Critic (Off-policy, Model-free)
+        01. Input: θ1, θ2, φ                                    . Initial parameters
+        02. ¯θ1 ← θ1, ¯θ2 ← θ2                                  . Initialize target network weights
+        03. D ← ∅                                               . Initialize an empty replay pool
+        04.    for each iteration do
+        05.       for each environment step do
+        06.          at ∼ πφ(at|st)                             . Sample action from the policy
+        07.          st+1 ∼ p(st+1|st, at)                      . Sample transition from the environment
+        08.          D ← D ∪ {(st, at, r(st, at), st+1)}        . Store the transition in the replay pool
+        09.       end for
+        10.       for each gradient step do
+        11.          θi ← θi − λ_Q ˆ∇θi J_Q(θi) for i ∈ {1, 2} . Update the Q-function parameters
+        12.          φ ← φ − λ_π ˆ∇φ J_π(φ)                    . Update policy weights
+        13.          α ← α − λ ˆ∇α J(α)                        . Adjust temperature
+        14.          ¯θi ← τ θi + (1 − τ) + ¯θi for i ∈ {1, 2}  . Update target network weights
+        15.       end for
+        16.    end for
+        17. Output: θ1, θ2, φ                                   . Optimized parameters
+    """
     def __init__(self):
         super(SAC, self).__init__()
-        print('Initialize SAC!')
+        print('Initialize SAC Algorithm!')
         pass
 
 
@@ -72,5 +92,21 @@ class SAC(MFRL):
     def learn(self):
         pass
 
+    def updateAC(self, batch):
+        pass
 
-    
+    def updateQ(self, batch):
+        pass
+
+    def updateAlpha(self, batch):
+        pass
+
+    def updatePi(self, batch):
+        pass
+
+    def updateTarget(self):
+        pass
+
+
+# Report:
+#   Explain the problem, algorithm, do anaysis, and show results.
