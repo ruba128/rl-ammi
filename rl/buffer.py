@@ -2,7 +2,7 @@ import numpy as np
 import torch as T
 
 
-class ReplayBuffer:
+class ReplayBuffer: # Done
     """
     FIFO Replay buffer for off-policy data:
         store_transition: D ← D ∪ {(st, at, r(st, at), st+1)}
