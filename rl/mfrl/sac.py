@@ -19,18 +19,37 @@ class ActorCritic: # Done
                  config, seed
                  ):
 
+        '''
+        Parameters
+        ----------------------------------------------
+        obs_dim: int, observation dimentsion
+        act_dim: int, actor dimension
+        act_up_lim: float, the maximum value for the actuator
+        act_low_lim: floar, the minimum value for the actuator
+        config: dict, see the structure at config
+
+        Returns
+        ----------------------------------------------
+        None
+        '''
+        # Initialize parameters
         self.obs_dim, self.act_dim = obs_dim, act_dim
         self.act_up_lim, self.act_low_lim = act_up_lim, act_low_lim
         self.config, self.seed = config, seed
         self.device = config['experiment']['device']
 
         self.actor, self.critic, self.critic_target = None, None, None
-        self._biuld()
+        self._build()
 
-    def _biuld(self):
+    def _build(self):
+        '''
+        Initializes the actor, critic and
+        critic_target modules.
+        '''
         self.actor = self._set_actor()
         self.critic = self._set_critic()
         self.critic_target = self._set_critic()
+        # it is parameters will be updated using a weighted average
         for p in self.critic_target.parameters():
             p.require_grad = False
 
@@ -77,11 +96,11 @@ class SAC(MFRL):
         self.seed = seed
         self._biuld()
 
-    def _biuld(self):
-        super(SAC, self)._biuld()
+    def _build(self):
+        super(SAC, self)._build()
         self._build_sac()
 
-    def _biuld_sac(self):
+    def _build_sac(self):
         self._set_actor_critic()
         self._set_alpha()
 
