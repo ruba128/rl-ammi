@@ -49,7 +49,7 @@ class MFRL:
             while not(d or (ep_len == self.max_ep_len)):
                 # Take deterministic actions at test time 
                 o, r, d, _ = test_env.step(get_action(o, True))
-                ep_ret += r
+                ep_ret += r 
                 ep_len += 1
             # TODO: there should be some kind of logging here
             #logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
