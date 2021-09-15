@@ -3,7 +3,6 @@
 from buffer import ReplayBuffer
 import gym
 
-self, obs_dim, act_dim, max_size, seed, device)
 
 class MFRL:
     def __init__(self, config):
