@@ -7,41 +7,44 @@ import random
 
 import numpy as np
 import torch as T
-import wandb
+# import wandb
 
 from mfrl.sac import SAC
 
-def main(configs):
-    print('Start Soft Actor-Critic experiment...')
+def main(configs, seed):
     print('\n')
-    env_name = configs['experiment']['env_name']
-    env_type = 'mujoco'
+    alg_name = configs['algorithm']['alg_name']
+    env_name = configs['environment']['env_name']
+    env_type = configs['environment']['env_type']
 
-    group_name = f"gym-{env_type}-{env_name}"
+    group_name = f"{env_type}-{env_name}"
     now = datetime.datetime.now()
-    exp_prefix = f"{group_name}-{now.year}/{now.month}/{now.day}-->{now.hour}:{now.minute}:{now.second}"
+    exp_prefix = f"{group_name}-{seed}-{now.year}/{now.month}/{now.day}-->{now.hour}:{now.minute}:{now.second}"
 
     print('=' * 50)
-    print(f'Starting new experiment: {env_type}-{env_name}')
+    print(f'Starting a new experiment:')
+    print(f"\t Algorithm:   {alg_name}")
+    print(f"\t Environment: {env_name}")
+    print(f"\t Random seed: {seed}")
     print('=' * 50)
     
-    if configs['experiment']['WandB']:
-        wandb.init(
-            name=exp_prefix,
-            group=group_name,
-            project='sac-ammi',
-            # project='rand',
-            config=configs
-        )
+    # if configs['experiment']['WandB']:
+    #     wandb.init(
+    #         name=exp_prefix,
+    #         group=group_name,
+    #         # project='sac-ammi',
+    #         project='rand',
+    #         config=configs
+    #     )
 
-    # experiment = SAC(configs)
+    # agent = SAC(configs)
 
-    # experiment.learn()
-    # experiment.evaluate()
+    # agent.learn()
+    # agent.evaluate()
 
     print('\n')
-    print('...End Soft Actor-Critic experiment')
-    pass
+    print('End of the experiment.')
+    
 
 
 if __name__ == "__main__":
@@ -50,12 +53,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-cfg', type=str)
-    parser.add_argument('-cfg_path', type=str)
+    # parser.add_argument('-cfg_path', type=str)
+    parser.add_argument('-seed', type=str)
 
     args = parser.parse_args()
 
     sys.path.append("./config")
     config = importlib.import_module(args.cfg)
+    seed = args.seed
     print('configurations: ', config.configurations)
 
-    main(config.configurations)
+    main(config.configurations, seed)
