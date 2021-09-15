@@ -120,7 +120,7 @@ class SAC(MFRL):
         E = self.configs['algorithm']['learning']['env_steps']
         G = self.configs['algorithm']['learning']['grad_AC_steps_steps']
 
-        EE = self.configs['algorithm']['evaluation']['eval_episodes']
+        # EE = self.configs['algorithm']['evaluation']['eval_episodes']
 
         batch_size = self.configs['data']['batch_size']
 
@@ -143,7 +143,7 @@ class SAC(MFRL):
                         oldJs = [Jq, Jalpha, Jpi]
 
                 nt += E
-            self.evaluate(self.ator_critic.actor, EE, x)
+            self.evaluate(self.ator_critic.actor, x)
 
     def trainAC(self, g, batch, oldJs):
         AUI = self.configs['algorithm']['learning']['alpha_update_interval']
