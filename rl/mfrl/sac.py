@@ -16,7 +16,7 @@ class ActorCritic: # Done
     def __init__(self,
                  obs_dim, act_dim,
                  act_up_lim, act_low_lim,
-                 config, seed
+                 configs, seed
                  ):
 
         '''
@@ -35,8 +35,8 @@ class ActorCritic: # Done
         # Initialize parameters
         self.obs_dim, self.act_dim = obs_dim, act_dim
         self.act_up_lim, self.act_low_lim = act_up_lim, act_low_lim
-        self.config, self.seed = config, seed
-        self.device = config['experiment']['device']
+        self.config, self.seed = configs, seed
+        self.device = configs['experiment']['device']
 
         self.actor, self.critic, self.critic_target = None, None, None
         self._build()
@@ -108,7 +108,7 @@ class SAC(MFRL):
         self.ator_critic = ActorCritic(
             self.obs_dim, self.act_dim,
             self.act_up_lim, self.act_low_lim,
-            self.config, self.seed)
+            self.configs, self.seed)
 
     def _set_alpha(self):
         if self.configs['actor']['automatic_entropy']:
