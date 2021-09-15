@@ -19,8 +19,10 @@ class SoftQFunction(nn.Module):
         
     def forward(self, o, a):
 
+        #two critics
         Q_1 = self.critic1(T.cat([o, a], dim=1))
         Q_2 = self.critic2(T.cat([o, a], dim=1))
+
 
         return Q_1, Q_2
 
