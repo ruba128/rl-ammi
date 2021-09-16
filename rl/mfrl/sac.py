@@ -19,19 +19,6 @@ class ActorCritic: # Done
                  configs, seed
                  ):
 
-        '''
-        Parameters
-        ----------------------------------------------
-        obs_dim: int, observation dimentsion
-        act_dim: int, actor dimension
-        act_up_lim: float, the maximum value for the actuator
-        act_low_lim: floar, the minimum value for the actuator
-        config: dict, see the structure at config
-
-        Returns
-        ----------------------------------------------
-        None
-        '''
         # Initialize parameters
         self.obs_dim, self.act_dim = obs_dim, act_dim
         self.act_up_lim, self.act_low_lim = act_up_lim, act_low_lim
@@ -41,11 +28,8 @@ class ActorCritic: # Done
         self.actor, self.critic, self.critic_target = None, None, None
         self._build()
 
+
     def _build(self):
-        '''
-        Initializes the actor, critic and
-        critic_target modules.
-        '''
         self.actor = self._set_actor()
         self.critic = self._set_critic()
         self.critic_target = self._set_critic()
@@ -53,11 +37,13 @@ class ActorCritic: # Done
         for p in self.critic_target.parameters():
             p.require_grad = False
 
+
     def _set_actor(self):
         return StochasticPolicy(
             self.obs_dim, self.act_dim,
             self.act_up_lim, self.act_low_lim,
             self.config, self.device, self.seed).to(self.device)
+
 
     def _set_critic(self):
         return SoftQFunction(
