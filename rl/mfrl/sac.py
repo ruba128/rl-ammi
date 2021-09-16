@@ -150,7 +150,7 @@ class SAC(MFRL):
                     o, Z, el, t = self.internact(self.ator_critic.actor,
                                                  n, Ni,
                                                  o, Z, el, t)
-               
+
                 # Taking gradient steps after exploration
                 if n > Ni:
                     for g in range(1, G+1):
