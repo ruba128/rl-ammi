@@ -6,11 +6,11 @@ from buffer import ReplayBuffer
 """
 Notes:
     1. Two vertical steps between class methods
-    2. (+1) on 'def _seed_env'
-    3. __init__ should contain only configs, and seed
+    2. (+1) on 'def _seed_env' (DONE)
+    3. __init__ should contain only configs, and seed (DONE)
     4. Reduce info in class methods, ideally do a general one for the class
     5. self.interact: where's reset when termination
-    6. policy always return 2 quantities: pi, log_pi
+    6. policy always return 2 quantities: pi, log_pi (DONE)
     7. self.evaluate: we don't use detatch; because the policy module alreay detatch it from the comp.graph from within
     8. self.evaluate: where's 'Score'?
     9. Other notes start with '# !<note>'
@@ -18,13 +18,13 @@ Notes:
 
 
 class MFRL:
-    def __init__(self, config): # !Takes (self, configs, seed)
+    def __init__(self, config, seed): 
         print('Initialize MFRL!')
         self.config = config
 
         self.env_horizon = config['environment']['env_horizon']
-        self.max_size = config['environment']['model_buffer_size'] # !Doesn't exist
-        self.seed = config['experiment']['seed']
+        self.max_size = config['data']['buffer_size'] 
+        self.seed = seed
         self.num_test_eps = config['evaluation']['eval_episodes']
         self._build()
 
@@ -32,7 +32,7 @@ class MFRL:
         self._set_env()
         self._set_replay_buffer()
 
-    def _seed_env(self, env, seed): # (+1) Nice idea!
+    def _seed_env(self, env, seed):
         '''
         helper method to seed an environement created by gym
         '''
@@ -48,13 +48,13 @@ class MFRL:
         # Inintialize Learning environment:
         self.learn_env = gym.make(env_name)
         # seeding learn enviroment
-        self._seed_env(learn_env, self.seed) # !'learn_env' is not defined
+        self._seed_env(self.learn_env, self.seed) 
 
         if evaluate:        
             # Ininialize Evaluation environment:
             self.eval_env = gym.make(env_name)
             # seeding evaluation environement
-            self._seed_env(eval_env, seed) # !'eval_env' is not defined, 'seed' is not defined
+            self._seed_env(self.eval_env, self.seed) 
 
         # initialize observation dimension, actuator dimension, actuator lower limit and actuator upper limit
         self.obs_dim = self.learn_env.observation_space.shape
@@ -96,29 +96,36 @@ class MFRL:
         t: int, updated timestep
         '''
 
-        max_eps_len = self.config['environment']['env_horizon'] # !Doesn't exist
+        max_eps_len = self.config['environment']['horizon'] 
 
         # get the action
         action = None
-        if current_step_no > number_of_steps_before_exploitation:
+        if epoch_no > number_of_epochs_before_exploitation:
             # get an action from the policy
-            action = policy(state)[0].detach().cpu().numpy() # ![0]?
+            action = policy(state)[0].detach().cpu().numpy()
         else:
             # sample a random action
             action = self.learn_env.action_space.sample
 
         # apply the action on the environement
-        next_state, reward, d , info = self.env.step(action)
+        next_state, reward, d , _ = self.learn_env.step(action)
+        
         # stop forcefully if the episode length equal to the max episode length
-        d = True if el == max_el else d  # Doesn't exist
+        d = True if eps_len == max_eps_len else d  # Doesn't exist
 
         # store in the replay buffer
         self.buffer.store_transition(self.state, action, reward, next_state, d)
 
-        #reset values based on d
+        
+
         new_accumulated_rewards = accumulated_rewards + reward
         new_eps_length  = eps_len + 1
         t +=1 
+
+        #reset values based on d
+        if d:
+            next_state, new_accumulated_rewards, new_eps_length = self.learn_env.reset(), 0, 0
+
         return next_state, new_accumulated_rewards, new_eps_length, d, t
 
     
