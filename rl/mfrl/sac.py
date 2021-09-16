@@ -113,6 +113,7 @@ class SAC(MFRL):
             self.act_up_lim, self.act_low_lim,
             self.configs, self.seed)
 
+
     def _set_alpha(self):
         if self.configs['actor']['automatic_entropy']:
             # Learned Temprature
