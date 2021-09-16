@@ -96,13 +96,16 @@ class SAC(MFRL):
         self.seed = seed
         self._biuld()
 
+
     def _build(self):
         super(SAC, self)._build()
         self._build_sac()
 
+
     def _build_sac(self):
         self._set_actor_critic()
         self._set_alpha()
+
 
     def _set_actor_critic(self):
         self.ator_critic = ActorCritic(
@@ -130,6 +133,7 @@ class SAC(MFRL):
         else:
             # Fixed Temprature
             self.alpha = self.configs['actor']['alpha']
+
 
     def learn(self):
         N = self.configs['algorithm']['learning']['epochs']
@@ -162,6 +166,7 @@ class SAC(MFRL):
                 nt += E
             self.evaluate(self.ator_critic.actor, x)
 
+
     def trainAC(self, g, batch, oldJs):
         AUI = self.configs['algorithm']['learning']['alpha_update_interval']
         PUI = self.configs['algorithm']['learning']['policy_update_interval']
@@ -183,6 +188,7 @@ class SAC(MFRL):
             self.updateTarget()
 
         return Jq, Jalpha, Jpi
+
 
     def updateQ(self, batch):
         """"
@@ -221,6 +227,7 @@ class SAC(MFRL):
         
         return Jq
 
+
     def updateAlpha(self, batch):
         """
         
@@ -247,6 +254,7 @@ class SAC(MFRL):
             # Fixed Temprature
             return 0
 
+
     def updatePi(self, batch):
         """
         Jπ(φ) = Est∼D[ Eat∼πφ[α log (πφ(at|st)) − Qθ(st, at)] ]
@@ -268,6 +276,7 @@ class SAC(MFRL):
         self.ator_critic.actor.optimizer.step()
         
         return Jpi
+
 
     def updateTarget(self):
         tau = self.configs['critic']['tau']
