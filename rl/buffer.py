@@ -22,6 +22,7 @@ class ReplayBuffer: # Done !
 
         self.ptr, self.size, self.max_size = 0, 0, max_size
 
+
     def store_transition(self, o, a, r, o_next, d):
         self.observation_buffer[self.ptr] = o
         self.action_buffer[self.ptr] = a
@@ -31,6 +32,7 @@ class ReplayBuffer: # Done !
 
         self.ptr = (self.ptr+1) % self.max_size
         self.size = min(self.ptr+1, self.max_size)
+
 
     def sample_batch(self, bs=32):
         inx = np.random.randint(0, self.max_size, bs)
