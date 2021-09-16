@@ -3,13 +3,27 @@ import gym
 from buffer import ReplayBuffer
 
 
+"""
+Notes:
+    1. Two vertical steps between class methods
+    2. (+1) on 'def _seed_env'
+    3. __init__ should contain only configs, and seed
+    4. Reduce info in class methods, ideally do a general one for the class
+    5. self.interact: where's reset when termination
+    6. policy always return 2 quantities: pi, log_pi
+    7. self.evaluate: we don't use detatch; because the policy module alreay detatch it from the comp.graph from within
+    8. self.evaluate: where's 'Score'?
+    9. Other notes start with '# !<note>'
+"""
+
+
 class MFRL:
-    def __init__(self, config):
+    def __init__(self, config): # !Takes (self, configs, seed)
         print('Initialize MFRL!')
         self.config = config
 
         self.env_horizon = config['environment']['env_horizon']
-        self.max_size = config['environment']['model_buffer_size']
+        self.max_size = config['environment']['model_buffer_size'] # !Doesn't exist
         self.seed = config['experiment']['seed']
         self.num_test_eps = config['evaluation']['eval_episodes']
         self._build()
@@ -18,7 +32,7 @@ class MFRL:
         self._set_env()
         self._set_replay_buffer()
 
-    def _seed_env(self, env, seed):
+    def _seed_env(self, env, seed): # (+1) Nice idea!
         '''
         helper method to seed an environement created by gym
         '''
@@ -34,13 +48,13 @@ class MFRL:
         # Inintialize Learning environment:
         self.learn_env = gym.make(env_name)
         # seeding learn enviroment
-        self._seed_env(learn_env, self.seed)
+        self._seed_env(learn_env, self.seed) # !'learn_env' is not defined
 
         if evaluate:        
             # Ininialize Evaluation environment:
             self.eval_env = gym.make(env_name)
             # seeding evaluation environement
-            self._seed_env(eval_env, seed)
+            self._seed_env(eval_env, seed) # !'eval_env' is not defined, 'seed' is not defined
 
         # initialize observation dimension, actuator dimension, actuator lower limit and actuator upper limit
         self.obs_dim = self.learn_env.observation_space.shape
@@ -54,7 +68,7 @@ class MFRL:
         device = self.config['experiment']['device']
         self.buffer =  ReplayBuffer(self.obs_dim, self.act_dim, buffer_size, self.seed, device)
 
-    def initialize_learning(self, init_epochs):
+    def initialize_learning(self, init_epochs): # !This's for future modeifications
         self.state = self.learn_env.reset()
 
     
@@ -82,13 +96,13 @@ class MFRL:
         t: int, updated timestep
         '''
 
-        max_eps_len = self.config['environment']['env_horizon']
+        max_eps_len = self.config['environment']['env_horizon'] # !Doesn't exist
 
         # get the action
         action = None
         if current_step_no > number_of_steps_before_exploitation:
             # get an action from the policy
-            action = policy(state)[0].detach().cpu().numpy()
+            action = policy(state)[0].detach().cpu().numpy() # ![0]?
         else:
             # sample a random action
             action = self.learn_env.action_space.sample
@@ -96,7 +110,7 @@ class MFRL:
         # apply the action on the environement
         next_state, reward, d , info = self.env.step(action)
         # stop forcefully if the episode length equal to the max episode length
-        d = True if el == max_el else d
+        d = True if el == max_el else d  # Doesn't exist
 
         # store in the replay buffer
         self.buffer.store_transition(self.state, action, reward, next_state, d)
