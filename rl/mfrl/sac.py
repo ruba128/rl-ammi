@@ -57,7 +57,7 @@ class ActorCritic: # Done
         return StochasticPolicy(
             self.obs_dim, self.act_dim,
             self.act_up_lim, self.act_low_lim,
-            self.config, self.seed).to(self.device)
+            self.config, self.device, self.seed).to(self.device)
 
     def _set_critic(self):
         return SoftQFunction(
