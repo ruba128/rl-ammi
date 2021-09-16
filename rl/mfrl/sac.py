@@ -1,3 +1,7 @@
+import time
+import wandb
+
+import numpy as np
 import torch as T
 import torch.nn.functional as F
 
@@ -133,8 +137,13 @@ class SAC(MFRL):
 
         o, Z, el, t = self.env.reset(), 0, 0, 0
         oldJs = [0, 0, 0]
+        JQList, JAlphaList, JPiList = [], [], []
+        logs = dict()
+
+        start_time_real = time.time()
         for n in range(1, N+1):
             nt, x = 0, (n * NT) / NT
+            learn_start_real = time.time()
             while nt <= NT:
                 # Interaction steps
                 for e in range(1, E+1):
@@ -148,9 +157,25 @@ class SAC(MFRL):
                         batch = self.replay_buffer.sample(batch_size)
                         Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
                         oldJs = [Jq, Jalpha, Jpi]
+                        JQList.append(Jq)
+                        JAlphaList.append(Jalpha)
+                        JPiList.append(Jpi)
+                else:
+                    JQList.append(0)
+                    JAlphaList.append(0)
+                    JPiList.append(0)
 
                 nt += E
+            logs['time/training'] = time.time() - learn_start_real
+            logs['training/losses/Jq'] = np.mean(JQList)
+            logs['training/losses/Jalpha'] = np.mean(JAlphaList)
+            logs['training/losses/Jpi'] = np.mean(JPiList)
+
+            eval_start_real = time.time()
             self.evaluate(self.ator_critic.actor, x)
+            logs['time/evaluation'] = time.time() - eval_start_real
+            
+        logs['time/total'] = time.time() - start_time_real
 
 
     def trainAC(self, g, batch, oldJs):
