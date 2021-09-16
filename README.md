@@ -13,7 +13,8 @@ Contributors (first name alphabetical order):
 #### Soft Actor-Critic (SAC)
 
 Inspired by:
-- [spinningup](https://github.com/openai/spinningup)
-- [Stabel baselines](https://github.com/hill-a/stable-baselines)
-- [rlkit](https://github.com/rail-berkeley/rlkit)
+- [SpinningUp](https://github.com/openai/spinningup)
+- [Stabel Baselines](https://github.com/hill-a/stable-baselines)
+- [RLKit](https://github.com/rail-berkeley/rlkit)
 - [CleanRL](https://github.com/vwxyzjn/cleanrl)
+- [Youtube-Code-Repository](https://github.com/philtabor/Youtube-Code-Repository)
