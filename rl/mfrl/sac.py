@@ -1,5 +1,4 @@
 import torch as T
-from torch._C import device
 import torch.nn.functional as F
 
 from mfrl.mfrl import MFRL
