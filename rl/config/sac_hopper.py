@@ -2,11 +2,11 @@
 
 configurations = {
     'environment': {
-            'env_name': 'Hopper-v3',
-            'env_type': 'gym-mujoco',
+            'name': 'Hopper-v3',
+            'type': 'gym-mujoco',
             'state_space': 'continuous',
             'action_space': 'continuous',
-            'env_horizon': 1e3,
+            'horizon': 1e3,
         },
 
     'algorithm': {
