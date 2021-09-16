@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    sys.path.append("./config")
+    sys.path.append("./configs")
     config = importlib.import_module(args.cfg)
     seed = args.seed
     print('configurations: ', config.configurations)
