@@ -1,6 +1,6 @@
 # RL-AMMI
 ## Reinforcement Learning Coursework for AMMI 2021
-### Implementations for RL algorithms + Experimentation on control tasks
+### Implementation for RL algorithms + Experimentation on control tasks
 
 Contributors (first name alphabetical order):
 - [MohammedElfatih Salah](https://github.com/mohammedElfatihSalah)
