@@ -139,8 +139,6 @@ class SAC(MFRL):
         E = self.configs['algorithm']['learning']['env_steps']
         G = self.configs['algorithm']['learning']['grad_AC_steps_steps']
 
-        # EE = self.configs['algorithm']['evaluation']['eval_episodes']
-
         batch_size = self.configs['data']['batch_size']
 
         o, Z, el, t = self.env.reset(), 0, 0, 0
