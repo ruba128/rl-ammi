@@ -14,13 +14,18 @@ class SoftQFunction(nn.Module):
         print('Initialize QFunction!')
         random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
 
-        self.critic1 = MLPNet(obs_dim + act_dim, 1, net_config, seed)
-        self.critic2 = MLPNet(obs_dim + act_dim, 1, net_config, seed)
+        optimizer = 'nn.optim' + net_configs['critic']['network']['optimizer']
+        lr = self.configs['critic']['network']['lr']
+
+        self.q1 = MLPNet(obs_dim + act_dim, 1, net_configs, seed)
+        self.q2 = MLPNet(obs_dim + act_dim, 1, net_configs, seed)
+        self.Qs = [self.q1, self.q2]
         
+        self.optimizer = eval(optimizer)(self.parameters(), lr)
+
     def forward(self, o, a):
 
-        Q_1 = self.critic1(T.cat([o, a], dim=1))
-        Q_2 = self.critic2(T.cat([o, a], dim=1))
+        q_inputs = T.cat([o, a], dim=-1)
 
-        return Q_1, Q_2
-
+        return tuple(Q(q_inputs) for Q in self.Qs)
+      
