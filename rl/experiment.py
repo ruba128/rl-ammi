@@ -37,8 +37,8 @@ def main(configs, seed):
     #         config=configs
     #     )
 
-    agent = SAC(configs)
-    agent.learn()
+    # agent = SAC(configs)
+    # agent.learn()
     # agent.evaluate()
 
     print('\n')
