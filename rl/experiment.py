@@ -13,16 +13,16 @@ from mfrl.sac import SAC
 
 def main(configs, seed):
     print('\n')
-    alg_name = configs['algorithm']['alg_name']
-    env_name = configs['environment']['env_name']
-    env_type = configs['environment']['env_type']
+    alg_name = configs['algorithm']['name']
+    env_name = configs['environment']['name']
+    env_type = configs['environment']['type']
 
     group_name = f"{env_type}-{env_name}"
     now = datetime.datetime.now()
     exp_prefix = f"{group_name}-{seed}-{now.year}/{now.month}/{now.day}-->{now.hour}:{now.minute}:{now.second}"
 
     print('=' * 50)
-    print(f'Starting a new experiment:')
+    print(f'Starting a new experiment')
     print(f"\t Algorithm:   {alg_name}")
     print(f"\t Environment: {env_name}")
     print(f"\t Random seed: {seed}")
@@ -37,12 +37,13 @@ def main(configs, seed):
     #         config=configs
     #     )
 
-    # agent = SAC(configs)
-    # agent.learn()
+    agent = SAC(configs, seed)
+    agent.learn()
     # agent.evaluate()
 
     print('\n')
-    print('End of the experiment.')
+    print('End of the experiment')
+    print('=' * 50)
     
 
 
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 
     sys.path.append("./configs")
     config = importlib.import_module(args.cfg)
-    seed = args.seed
+    seed = int(args.seed)
     print('configurations: ', config.configurations)
 
     main(config.configurations, seed)
