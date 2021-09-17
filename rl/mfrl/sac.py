@@ -143,10 +143,9 @@ class SAC(MFRL):
         JQList, JAlphaList, JPiList = [], [], []
         logs = dict()
         
-
-        print('\n[Interaction & Training] Starting')
         start_time_real = time.time()
         for n in range(Ni+1, N+1):
+            print('\n[ Learning ]')
             nt, x = 0, (n * NT) / NT
             learn_start_real = time.time()
             while nt <= NT:
@@ -170,19 +169,19 @@ class SAC(MFRL):
                     JPiList.append(0)
 
                 nt += E
-            logs['time/training'] = time.time() - learn_start_real
+            logs['time/training'] = round(time.time() - learn_start_real, 2)
             logs['training/objectives/sac/Jq'] = np.mean(JQList)
             logs['training/objectives/sac/Jalpha'] = np.mean(JAlphaList)
             logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
 
             eval_start_real = time.time()
             AvgEZ, AvgES, AvgEL = self.evaluate(self.actor_critic.actor, x)
-            logs['time/evaluation'] = time.time() - eval_start_real
+            logs['time/evaluation'] = round(time.time() - eval_start_real, 2)
             logs['evaluation/avg_episodic_return'] = AvgEZ
             # logs['evaluation/avg_episodic_score'] = AvgES
             logs['evaluation/avg_episodic_length'] = AvgEL
             
-            logs['time/total'] = time.time() - start_time_real
+            logs['time/total'] = round(time.time() - start_time_real, 2)
 
             # Printing logs
             if self.configs['experiment']['print_logs']:
