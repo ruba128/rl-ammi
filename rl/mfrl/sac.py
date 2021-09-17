@@ -126,9 +126,9 @@ class SAC(MFRL):
 
 
     def learn(self):
-        N = self.configs['algorithm']['learning']['epochs']
-        NT = self.configs['algorithm']['learning']['epoch_steps']
-        Ni = self.configs['algorithm']['learning']['init_epochs']
+        N = 10 #self.configs['algorithm']['learning']['epochs']
+        NT = 500 #self.configs['algorithm']['learning']['epoch_steps']
+        Ni = 1 #self.configs['algorithm']['learning']['init_epochs']
 
         E = self.configs['algorithm']['learning']['env_steps']
         G = self.configs['algorithm']['learning']['grad_AC_steps_steps']
