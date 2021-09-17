@@ -199,18 +199,11 @@ class SAC(MFRL):
 
         Jq = self.updateQ(batch)
 
-        if g % AUI == 0:
-            Jalpha = self.updateAlpha(batch)
-        else:
-            Jpi = oldJs[1]
+        Jalpha = self.updateAlpha(batch) if (g % AUI == 0) else oldJs[1]
 
-        if g % PUI == 0:
-            Jpi = self.updatePi(batch)
-        else:
-            Jpi = oldJs[2]
+        Jpi = self.updatePi(batch) if (g % PUI == 0) else oldJs[2]
         
-        if g % TUI == 0:
-            self.updateTarget()
+        if g % TUI == 0: self.updateTarget()
 
         return Jq, Jalpha, Jpi
 
