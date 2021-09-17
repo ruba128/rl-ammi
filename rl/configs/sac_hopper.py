@@ -14,8 +14,8 @@ configurations = {
         'learning': {
             'epochs': 1000, # N epochs
             'epoch_steps': 1000, # NT steps/epoch
-            'init_epochs': 1, # Ni epochs
-            'expl_epochs': 10, # Nx epochs
+            'init_epochs': 10, # Ni epochs
+            # 'expl_epochs': 10, # Nx epochs
 
             'env_steps' : 50, # E: interact E times then train
             'grad_AC_steps': 50, # ACG: ac grad
@@ -73,8 +73,9 @@ configurations = {
         'name': 'seed1',
         'seed': 1,
         'verbose': 0,
-        'device': "cuda:0",
-        'wandb_log': None,
+        'device': "cpu",
+        'wandb_log': True,
+        'print_logs': True,
         'logdir': 'tmp/sac',
         'capture_video': True
     }
