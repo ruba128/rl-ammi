@@ -7,15 +7,15 @@ This Deep RL course was taught at **The African Master's in Machine Intelligence
 
 
 
-## Algorithm(s):
+## Algorithm:
 Algorithm we re-implementing/plannning to re-implement:
 1. Soft Actor-Critic (SAC) [Paper](https://arxiv.org/abs/1812.05905)
 
 2. Model-Based Policy Optimization (MBPO) [Paper](https://arxiv.org/abs/1812.05905) (Next; Future work)
 
-3. Model Predictive Control-Soft Actor Critic (MPC-SAC) [Paper](https://ieeexplore.ieee.org/document/9429677)
+3. Model Predictive Control-Soft Actor Critic (MPC-SAC) [Paper](https://ieeexplore.ieee.org/document/9429677) (Next; Future work)
 
-4. Model Predictive Actor-Critic (MoPAC) [Paper](https://arxiv.org/abs/2103.13842)
+4. Model Predictive Actor-Critic (MoPAC) [Paper](https://arxiv.org/abs/2103.13842) (Next; Future work)
 
 
 
@@ -29,7 +29,7 @@ Algorithm we re-implementing/plannning to re-implement:
 ## Experiments and Results
 ### Classic Control
 
-### MuJoCo
+### MuJoCo Locomotion
 
 ### ShadowHand
 
