@@ -21,11 +21,11 @@ class ActorCritic: # Done
                  act_up_lim, act_low_lim,
                  configs, seed
                  ):
-
+        print('Initialize AC!')
         # Initialize parameters
         self.obs_dim, self.act_dim = obs_dim, act_dim
         self.act_up_lim, self.act_low_lim = act_up_lim, act_low_lim
-        self.config, self.seed = configs, seed
+        self.configs, self.seed = configs, seed
         self.device = configs['experiment']['device']
 
         self.actor, self.critic, self.critic_target = None, None, None
@@ -38,20 +38,22 @@ class ActorCritic: # Done
         self.critic_target = self._set_critic()
         # it is parameters will be updated using a weighted average
         for p in self.critic_target.parameters():
-            p.require_grad = False
+            p.requires_grad = False
 
 
     def _set_actor(self):
+        net_configs = self.configs['actor']['network']
         return StochasticPolicy(
             self.obs_dim, self.act_dim,
             self.act_up_lim, self.act_low_lim,
-            self.config, self.device, self.seed).to(self.device)
+            net_configs, self.device, self.seed).to(self.device)
 
 
     def _set_critic(self):
+        net_configs = self.configs['actor']['network']
         return SoftQFunction(
             self.obs_dim, self.act_dim,
-            self.config, self.seed).to(self.device)
+            net_configs, self.seed).to(self.device)
 
 
 
@@ -83,7 +85,7 @@ class SAC(MFRL):
         print('Initialize SAC Algorithm!')
         self.configs = configs
         self.seed = seed
-        self._biuld()
+        self._build()
 
 
     def _build(self):
@@ -97,7 +99,7 @@ class SAC(MFRL):
 
 
     def _set_actor_critic(self):
-        self.ator_critic = ActorCritic(
+        self.actor_critic = ActorCritic(
             self.obs_dim, self.act_dim,
             self.act_up_lim, self.act_low_lim,
             self.configs, self.seed)
@@ -107,17 +109,17 @@ class SAC(MFRL):
         if self.configs['actor']['automatic_entropy']:
             # Learned Temprature
             device = self.configs['experiment']['device']
-            optimizer = 'nn.optim' + self.configs['actor']['network']['optimizer']
+            optimizer = 'T.optim.' + self.configs['actor']['network']['optimizer']
             lr = self.configs['actor']['network']['lr']
             target_entropy = self.configs['actor']['target_entropy']
 
             self.target_entropy = (
                 - 1.0 * T.prod(
-                    T.tensor(self.train_env.action_space.shape).to(device)
+                    T.tensor(self.learn_env.action_space.shape).to(device)
                 ).item() if target_entropy == 'auto' else target_entropy
             )
 
-            self.log_alpha = T.zeros(1, require_grad=True, device=device)
+            self.log_alpha = T.zeros(1, requires_grad=True, device=device)
             self.alpha = self.log_alpha.exp().item()
             self.alpha_optimizer = eval(optimizer)([self.log_alpha], lr)
         else:
@@ -126,40 +128,42 @@ class SAC(MFRL):
 
 
     def learn(self):
-        N = 10 #self.configs['algorithm']['learning']['epochs']
+        N = 20 #self.configs['algorithm']['learning']['epochs']
         NT = 500 #self.configs['algorithm']['learning']['epoch_steps']
-        Ni = 1 #self.configs['algorithm']['learning']['init_epochs']
+        Ni = 5 #self.configs['algorithm']['learning']['init_epochs']
 
         E = self.configs['algorithm']['learning']['env_steps']
-        G = self.configs['algorithm']['learning']['grad_AC_steps_steps']
+        G = self.configs['algorithm']['learning']['grad_AC_steps']
 
         batch_size = self.configs['data']['batch_size']
 
-        o, Z, el, t = self.env.reset(), 0, 0, 0
+        # o, Z, el, t = self.env.reset(), 0, 0, 0
+        o, Z, el, t = self.initialize_learning(NT, Ni)
         oldJs = [0, 0, 0]
         JQList, JAlphaList, JPiList = [], [], []
         logs = dict()
+        
 
+        print('\n[Interaction & Training] Starting')
         start_time_real = time.time()
-        for n in range(1, N+1):
+        for n in range(Ni+1, N+1):
             nt, x = 0, (n * NT) / NT
             learn_start_real = time.time()
             while nt <= NT:
                 # Interaction steps
                 for e in range(1, E+1):
-                    o, Z, el, t = self.internact(self.ator_critic.actor,
-                                                 n, Ni,
+                    o, Z, el, t = self.internact(self.actor_critic.actor,
                                                  o, Z, el, t)
 
                 # Taking gradient steps after exploration
                 if n > Ni:
                     for g in range(1, G+1):
-                        batch = self.replay_buffer.sample(batch_size)
+                        batch = self.replay_buffer.sample_batch(batch_size)
                         Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
                         oldJs = [Jq, Jalpha, Jpi]
-                        JQList.append(Jq)
-                        JAlphaList.append(Jalpha)
-                        JPiList.append(Jpi)
+                        JQList.append(Jq.item())
+                        JAlphaList.append(Jalpha.item())
+                        JPiList.append(Jpi.item())
                 else:
                     JQList.append(0)
                     JAlphaList.append(0)
@@ -172,23 +176,23 @@ class SAC(MFRL):
             logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
 
             eval_start_real = time.time()
-            AvgEZ, AvgES, AvgEL = self.evaluate(self.ator_critic.actor, x)
+            AvgEZ, AvgES, AvgEL = self.evaluate(self.actor_critic.actor, x)
             logs['time/evaluation'] = time.time() - eval_start_real
             logs['evaluation/avg_episodic_return'] = AvgEZ
-            logs['evaluation/avg_episodic_score'] = AvgES
+            # logs['evaluation/avg_episodic_score'] = AvgES
             logs['evaluation/avg_episodic_length'] = AvgEL
             
             logs['time/total'] = time.time() - start_time_real
 
             # Printing logs
-            if self.config['experiment']['print_logs']:
+            if self.configs['experiment']['print_logs']:
                 print('=' * 80)
                 print(f'Epoch {n}')
                 for k, v in logs.items():
                     print(f'{k}: {v}')
 
             # # WandB
-            # if self.config['experiment']['WandB']:
+            # if self.configs['experiment']['WandB']:
             #     wandb.log(logs)
 
 
@@ -222,23 +226,28 @@ class SAC(MFRL):
         gamma = self.configs['critic']['gamma']
 
         # Calculate two Q-functions
-        Qs = self.ator_critic.critic(O, A)
+        Qs = self.actor_critic.critic(O, A)
 
         # Bellman backup for Qs
         with T.no_grad():
-            pi, log_pi = self.ator_critic.actor(O, reparam=True, return_log_pi=True)
+            pi, log_pi = self.actor_critic.actor(O, reparameterize=True, return_log_pi=True)
             A_next = pi
-            Qs_targ = T.cat(self.ator_critic.critic(O_next, A_next), dim=1)
-            min_Q_targ, _ = T.min(Qs_targ, dim=1, keep_dim=True)
-            Qs_backup = R + (1-D) * gamma * (min_Q_targ - self.alpha * log_pi)
+            Qs_targ = T.cat(self.actor_critic.critic(O_next, A_next), dim=1)
+            min_Q_targ, _ = T.min(Qs_targ, dim=1, keepdim=True)
+            # print('R: ', R.shape)
+            # print('D: ', D.shape)
+            # print('min_Q_targ: ', min_Q_targ.shape)
+            # print('self.alpha: ', self.alpha)
+            # print('log_pi: ', log_pi.shape)
+            Qs_backup = R + gamma * (1-D) * (min_Q_targ - self.alpha * log_pi)
 
         # MSE loss
         Jq = 0.5 * sum([F.mse_loss(Q, Qs_backup) for Q in Qs])
 
         # Gradient Descent
-        self.ator_critic.critic.optimizer.zero_grad()
+        self.actor_critic.critic.optimizer.zero_grad()
         Jq.backward()
-        self.ator_critic.critic.optimizer.step()
+        self.actor_critic.critic.optimizer.step()
         
         return Jq
 
@@ -254,8 +263,11 @@ class SAC(MFRL):
             O = batch['observations']
 
             with T.no_grad():
-                _, log_pi = self.ator_critic.actor(O, reparameterize=True, return_log_pi=True)
-            Jalpha = - (self.log_alpha * (log_pi + self.target_entropy)).item()
+                _, log_pi = self.actor_critic.actor(O, reparameterize=True, return_log_pi=True)
+            # print('self.log_alpha: ', self.log_alpha)
+            # print('log_pi: ', log_pi)
+            # print('self.target_entropy: ', self.target_entropy)
+            Jalpha = - (self.log_alpha * (log_pi + self.target_entropy)).mean()
 
             # Gradient Descent
             self.alpha_optimizer.zero_grad()
@@ -278,17 +290,17 @@ class SAC(MFRL):
         O = batch['observations']
 
         # Policy Evaluation
-        pi, log_pi = self.ator_critic.actor(O, reparam=True, return_log_pi=True)
-        Qs_pi = T.cat(self.ator_critic.critic(O, pi), dim=1)
-        min_Q_pi, _ = T.min(Qs_pi, dim=1, keep_dim=True)
+        pi, log_pi = self.actor_critic.actor(O, reparameterize=True, return_log_pi=True)
+        Qs_pi = T.cat(self.actor_critic.critic(O, pi), dim=1)
+        min_Q_pi, _ = T.min(Qs_pi, dim=1, keepdim=True)
 
         # Policy Improvement
         Jpi = (self.alpha * log_pi - min_Q_pi).mean()
 
         # Gradient Ascent
-        self.ator_critic.actor.optimizer.zero_grad()
+        self.actor_critic.actor.optimizer.zero_grad()
         Jpi.backward()
-        self.ator_critic.actor.optimizer.step()
+        self.actor_critic.actor.optimizer.step()
         
         return Jpi
 
@@ -296,8 +308,8 @@ class SAC(MFRL):
     def updateTarget(self):
         tau = self.configs['critic']['tau']
         with T.no_grad():
-            for p, p_targ in zip(self.ator_critic.critic.parameters(),
-                                 self.ator_critic.critic_target.parameters()):
+            for p, p_targ in zip(self.actor_critic.critic.parameters(),
+                                 self.actor_critic.critic_target.parameters()):
                 p_targ.data.copy_(tau * p.data + (1-tau) * p_targ.data)
 
 
