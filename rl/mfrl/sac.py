@@ -5,9 +5,9 @@ import numpy as np
 import torch as T
 import torch.nn.functional as F
 
-from mfrl.mfrl import MFRL
-from policy import StochasticPolicy
-from q_function import SoftQFunction
+from mfrl.mfrl_ import MFRL
+from networks.policy_ import StochasticPolicy
+from networks.q_function_ import SoftQFunction
 
 
 
@@ -167,15 +167,29 @@ class SAC(MFRL):
 
                 nt += E
             logs['time/training'] = time.time() - learn_start_real
-            logs['training/losses/Jq'] = np.mean(JQList)
-            logs['training/losses/Jalpha'] = np.mean(JAlphaList)
-            logs['training/losses/Jpi'] = np.mean(JPiList)
+            logs['training/objectives/sac/Jq'] = np.mean(JQList)
+            logs['training/objectives/sac/Jalpha'] = np.mean(JAlphaList)
+            logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
 
             eval_start_real = time.time()
-            self.evaluate(self.ator_critic.actor, x)
+            AvgEZ, AvgES, AvgEL = self.evaluate(self.ator_critic.actor, x)
             logs['time/evaluation'] = time.time() - eval_start_real
+            logs['evaluation/avg_episodic_return'] = AvgEZ
+            logs['evaluation/avg_episodic_score'] = AvgES
+            logs['evaluation/avg_episodic_length'] = AvgEL
             
-        logs['time/total'] = time.time() - start_time_real
+            logs['time/total'] = time.time() - start_time_real
+
+            # Printing logs
+            if self.config['experiment']['print_logs']:
+                print('=' * 80)
+                print(f'Epoch {n}')
+                for k, v in logs.items():
+                    print(f'{k}: {v}')
+
+            # # WandB
+            # if self.config['experiment']['WandB']:
+            #     wandb.log(logs)
 
 
     def trainAC(self, g, batch, oldJs):
