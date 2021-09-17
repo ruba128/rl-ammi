@@ -198,11 +198,8 @@ class SAC(MFRL):
         TUI = self.configs['algorithm']['learning']['target_update_interval']
 
         Jq = self.updateQ(batch)
-
         Jalpha = self.updateAlpha(batch) if (g % AUI == 0) else oldJs[1]
-
         Jpi = self.updatePi(batch) if (g % PUI == 0) else oldJs[2]
-        
         if g % TUI == 0: self.updateTarget()
 
         return Jq, Jalpha, Jpi
