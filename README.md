@@ -9,7 +9,7 @@ This Deep RL course was taught at **The African Master's in Machine Intelligence
 
 ## Algorithm:
 Algorithm we re-implementing/plannning to re-implement:
-1. Soft Actor-Critic (SAC) [Paper](https://arxiv.org/abs/1812.05905)
+1. Soft Actor-Critic (SAC) [Paper](https://arxiv.org/abs/1812.05905) (Now)
 
 2. Model-Based Policy Optimization (MBPO) [Paper](https://arxiv.org/abs/1812.05905) (Next; Future work)
 
