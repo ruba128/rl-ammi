@@ -10,7 +10,7 @@ configurations = {
         },
 
     'algorithm': {
-        'alg_name': 'SAC',
+        'name': 'SAC',
         'learning': {
             'epochs': 1000, # N epochs
             'epoch_steps': 1000, # NT steps/epoch
