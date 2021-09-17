@@ -14,11 +14,11 @@ class ReplayBuffer: # Done !
         random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
         self.device = device
 
-        self.observation_buffer = np.zeros(max_size, obs_dim, dtype=np.float32)
-        self.action_buffer = np.zeros(max_size, act_dim, dtype=np.float32)
-        self.reward_buffer = np.zeros(max_size, 1, dtype=np.float32)
-        self.observation_next_buffer = np.zeros(max_size, obs_dim, dtype=np.float32)
-        self.terminal_buffer = np.zeros(max_size, 1, dtype=np.float32)
+        self.observation_buffer = np.zeros((max_size, obs_dim), dtype=np.float32)
+        self.action_buffer = np.zeros((max_size, act_dim), dtype=np.float32)
+        self.reward_buffer = np.zeros((max_size, 1), dtype=np.float32)
+        self.observation_next_buffer = np.zeros((max_size, obs_dim), dtype=np.float32)
+        self.terminal_buffer = np.zeros((max_size, 1), dtype=np.float32)
 
         self.ptr, self.size, self.max_size = 0, 0, max_size
 
