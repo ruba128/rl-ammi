@@ -21,7 +21,7 @@ class ActorCritic: # Done
                  act_up_lim, act_low_lim,
                  configs, seed
                  ):
-        print('Initialize AC!')
+        # print('Initialize AC!')
         # Initialize parameters
         self.obs_dim, self.act_dim = obs_dim, act_dim
         self.act_up_lim, self.act_low_lim = act_up_lim, act_low_lim
@@ -36,7 +36,7 @@ class ActorCritic: # Done
         self.actor = self._set_actor()
         self.critic = self._set_critic()
         self.critic_target = self._set_critic()
-        # it is parameters will be updated using a weighted average
+        # parameters will be updated using a weighted average
         for p in self.critic_target.parameters():
             p.requires_grad = False
 
@@ -140,7 +140,8 @@ class SAC(MFRL):
         # o, Z, el, t = self.env.reset(), 0, 0, 0
         o, Z, el, t = self.initialize_learning(NT, Ni)
         oldJs = [0, 0, 0]
-        JQList, JAlphaList, JPiList = [], [], []
+        JQList, JAlphaList, JPiList = [0]*Ni, [0]*Ni, [0]*Ni
+        AlphaList = [self.alpha]*Ni
         logs = dict()
         
         start_time_real = time.time()
@@ -155,40 +156,42 @@ class SAC(MFRL):
                                                  o, Z, el, t)
 
                 # Taking gradient steps after exploration
-                if n > Ni:
-                    for g in range(1, G+1):
-                        batch = self.replay_buffer.sample_batch(batch_size)
-                        Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
-                        oldJs = [Jq, Jalpha, Jpi]
-                        JQList.append(Jq.item())
-                        JAlphaList.append(Jalpha.item())
-                        JPiList.append(Jpi.item())
-                else:
-                    JQList.append(0)
-                    JAlphaList.append(0)
-                    JPiList.append(0)
+                # if n > Ni:
+                for g in range(1, G+1):
+                    batch = self.replay_buffer.sample_batch(batch_size)
+                    Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
+                    oldJs = [Jq, Jalpha, Jpi]
+                    JQList.append(Jq.item())
+                    JAlphaList.append(Jalpha.item())
+                    AlphaList.append(self.alpha)
+                    JPiList.append(Jpi.item())
+                # else:
+                #     JQList.append(0)
+                #     JAlphaList.append(0)
+                #     JPiList.append(0)
 
                 nt += E
-            logs['time/training'] = round(time.time() - learn_start_real, 2)
+            logs['time/training'] = time.time() - learn_start_real
             logs['training/objectives/sac/Jq'] = np.mean(JQList)
             logs['training/objectives/sac/Jalpha'] = np.mean(JAlphaList)
+            logs['training/objectives/sac/alpha'] = np.mean(AlphaList)
             logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
 
             eval_start_real = time.time()
             AvgEZ, AvgES, AvgEL = self.evaluate(self.actor_critic.actor, x)
-            logs['time/evaluation'] = round(time.time() - eval_start_real, 2)
+            logs['time/evaluation'] = time.time() - eval_start_real
             logs['evaluation/avg_episodic_return'] = AvgEZ
             # logs['evaluation/avg_episodic_score'] = AvgES
             logs['evaluation/avg_episodic_length'] = AvgEL
             
-            logs['time/total'] = round(time.time() - start_time_real, 2)
+            logs['time/total'] = time.time() - start_time_real
 
             # Printing logs
             if self.configs['experiment']['print_logs']:
                 print('=' * 80)
                 print(f'Epoch {n}')
                 for k, v in logs.items():
-                    print(f'{k}: {v}')
+                    print(f'{k}: {round(v, 2)}')
 
             # WandB
             if self.configs['experiment']['WandB']:
@@ -229,16 +232,11 @@ class SAC(MFRL):
 
         # Bellman backup for Qs
         with T.no_grad():
-            pi, log_pi = self.actor_critic.actor(O, reparameterize=True, return_log_pi=True)
-            A_next = pi
+            pi_next, log_pi_next = self.actor_critic.actor(O_next)
+            A_next = pi_next
             Qs_targ = T.cat(self.actor_critic.critic(O_next, A_next), dim=1)
             min_Q_targ, _ = T.min(Qs_targ, dim=1, keepdim=True)
-            # print('R: ', R.shape)
-            # print('D: ', D.shape)
-            # print('min_Q_targ: ', min_Q_targ.shape)
-            # print('self.alpha: ', self.alpha)
-            # print('log_pi: ', log_pi.shape)
-            Qs_backup = R + gamma * (1-D) * (min_Q_targ - self.alpha * log_pi)
+            Qs_backup = R + gamma * (1-D) * (min_Q_targ - self.alpha * log_pi_next)
 
         # MSE loss
         Jq = 0.5 * sum([F.mse_loss(Q, Qs_backup) for Q in Qs])
@@ -262,10 +260,7 @@ class SAC(MFRL):
             O = batch['observations']
 
             with T.no_grad():
-                _, log_pi = self.actor_critic.actor(O, reparameterize=True, return_log_pi=True)
-            # print('self.log_alpha: ', self.log_alpha)
-            # print('log_pi: ', log_pi)
-            # print('self.target_entropy: ', self.target_entropy)
+                _, log_pi = self.actor_critic.actor(O)
             Jalpha = - (self.log_alpha * (log_pi + self.target_entropy)).mean()
 
             # Gradient Descent
@@ -289,7 +284,7 @@ class SAC(MFRL):
         O = batch['observations']
 
         # Policy Evaluation
-        pi, log_pi = self.actor_critic.actor(O, reparameterize=True, return_log_pi=True)
+        pi, log_pi = self.actor_critic.actor(O)
         Qs_pi = T.cat(self.actor_critic.critic(O, pi), dim=1)
         min_Q_pi, _ = T.min(Qs_pi, dim=1, keepdim=True)
 
