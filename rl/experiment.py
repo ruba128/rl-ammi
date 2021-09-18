@@ -19,7 +19,7 @@ def main(configs, seed):
 
     group_name = f"{env_type}-{env_name}"
     now = datetime.datetime.now()
-    exp_prefix = f"{group_name}-{seed}-{now.year}/{now.month}/{now.day}-->{now.hour}:{now.minute}:{now.second}"
+    exp_prefix = f"{group_name}-{seed}--[{now.year}-{now.month}-{now.day}]-->{now.hour}:{now.minute}:{now.second}"
 
     print('=' * 50)
     print(f'Starting a new experiment')
@@ -37,7 +37,7 @@ def main(configs, seed):
     #         config=configs
     #     )
 
-    agent = SAC(configs, seed)
+    agent = SAC(exp_prefix, configs, seed)
     agent.learn()
     # agent.evaluate()
 
