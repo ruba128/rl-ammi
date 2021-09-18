@@ -3,7 +3,7 @@
 configurations = {
     'environment': {
             'name': 'Pendulum-v0',
-            'type': 'box-control',
+            'type': 'classic-control',
             'state_space': 'continuous',
             'action_space': 'continuous',
             'horizon': 100,
