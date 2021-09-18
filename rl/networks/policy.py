@@ -51,6 +51,7 @@ class StochasticPolicy(nn.Module):
 		std = T.exp(log_std)
 		return mean, std
 
+
 	def prob(self, mean, std, reparameterize):
 		pre_tanh_value = None
 		tanh_normal = TanhNormal(mean, std, device=self.device)
@@ -61,15 +62,18 @@ class StochasticPolicy(nn.Module):
 		pi = (pi * self.action_scale) + self.action_bias
 		return pi, pre_tanh_value
 
+
 	def logprob(self, pi, mean, std, pre_tanh_value):
 		tanh_normal = TanhNormal(mean, std, device=self.device)
 		log_pi = tanh_normal.log_prob(pi, pre_tanh_value=pre_tanh_value)
 		return log_pi.view(-1,1)
 
+
 	def deterministic(self, mean):
 		with T.no_grad():
 			pi = (T.tanh(mean) * self.action_scale) + self.action_bias
 		return pi
+
 
 	def forward(self,
 				obs,
@@ -90,6 +94,7 @@ class StochasticPolicy(nn.Module):
 			else:
 				pi, pre_tanh_value = self.prob(mean, std, reparameterize)
 		return pi, log_pi
+
 
 	def step_np(self,
 				obs,
