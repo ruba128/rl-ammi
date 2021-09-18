@@ -17,13 +17,13 @@ class SoftQFunction(nn.Module):
         optimizer = 'T.optim.' + net_configs['optimizer']
         lr = net_configs['lr']
 
+        super().__init__() # To automatically use forward
+
         self.q1 = MLPNet(obs_dim + act_dim, 1, net_configs, seed)
         self.q2 = MLPNet(obs_dim + act_dim, 1, net_configs, seed)
         self.Qs = [self.q1, self.q2]
         
         self.optimizer = eval(optimizer)(self.parameters(), lr)
-
-        super().__init__() # To automatically use forward
 
 
     def forward(self, o, a):
