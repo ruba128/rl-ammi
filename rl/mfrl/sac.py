@@ -128,9 +128,9 @@ class SAC(MFRL):
 
 
     def learn(self):
-        N = 20 #self.configs['algorithm']['learning']['epochs']
-        NT = 500 #self.configs['algorithm']['learning']['epoch_steps']
-        Ni = 5 #self.configs['algorithm']['learning']['init_epochs']
+        N = self.configs['algorithm']['learning']['epochs']
+        NT = self.configs['algorithm']['learning']['epoch_steps']
+        Ni = self.configs['algorithm']['learning']['init_epochs']
 
         E = self.configs['algorithm']['learning']['env_steps']
         G = self.configs['algorithm']['learning']['grad_AC_steps']
@@ -190,9 +190,9 @@ class SAC(MFRL):
                 for k, v in logs.items():
                     print(f'{k}: {v}')
 
-            # # WandB
-            # if self.configs['experiment']['WandB']:
-            #     wandb.log(logs)
+            # WandB
+            if self.configs['experiment']['WandB']:
+                wandb.log(logs)
 
 
     def trainAC(self, g, batch, oldJs):
