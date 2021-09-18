@@ -10,7 +10,7 @@ class ReplayBuffer: # Done !
         sample_batch: B ~ D
     """
     def __init__(self, obs_dim, act_dim, max_size, seed, device):
-        print('Initialize ReplayBuffer!')
+        # print('Initialize ReplayBuffer!')
         random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
         self.device = device
 
