@@ -20,7 +20,7 @@ class ActorCritic: # Done
                  obs_dim, act_dim,
                  act_up_lim, act_low_lim,
                  configs, seed
-                 ):
+                 ) -> None:
         # print('Initialize AC!')
         # Initialize parameters
         self.obs_dim, self.act_dim = obs_dim, act_dim
@@ -80,7 +80,7 @@ class SAC(MFRL):
         17. Output: θ1, θ2, φ                                   > Optimized parameters
   
     """
-    def __init__(self, exp_prefix, configs, seed):
+    def __init__(self, exp_prefix, configs, seed) -> None:
         super(SAC, self).__init__(exp_prefix, configs, seed)
         print('Initialize SAC Algorithm!')
         self.configs = configs
