@@ -24,13 +24,19 @@ Algorithm we re-implementing/plannning to re-implement:
 #### Ubuntu 20.04
 sudo apt-get install ffmpeg
 
+conda create -n rl-ammi python=3.8
+pip install numpy
+pip install torch
+pip install wandb
+pip install gym
 
 #### MacOS
 brew install ffmpeg
 
 
 ### Run an experiment
-
+cd rl-ammi/
+python experiment.py -cfg <cfg_file-.py> -seed <int>
 
 
 ## Experiments and Results
