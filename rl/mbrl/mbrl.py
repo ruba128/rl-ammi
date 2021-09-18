@@ -3,9 +3,12 @@ from gym.spaces import Box
 from gym.wrappers import RecordVideo
 
 from buffer import ReplayBuffer
-# from 
+from world_models.world_model import WorldModel
 
 class MBRL:
+    """
+    Model-Based Reinforcement Learning
+    """
     def __init__(self, exp_prefix, configs, seed):
         # super(MFRL, self).__init__(configs, seed)
         # print('Initialize MFRL!')
@@ -16,7 +19,7 @@ class MBRL:
 
     def _build(self):
         self._set_env()
-        self._set_replay_buffer()
+        self._set_env_buffer()
 
 
     def _set_env(self):
@@ -49,7 +52,7 @@ class MBRL:
         env.observation_space.seed(seed)
 
 
-    def _set_replay_buffer(self):
+    def _set_env_buffer(self):
         max_size = self.configs['data']['buffer_size']
         device = self.configs['experiment']['device']
         self.replay_buffer = ReplayBuffer(self.obs_dim, self.act_dim,

@@ -38,7 +38,7 @@ class MBPO(MBRL, SAC):
         pass
 
 
-    def _seed_fake_world(self, env, seed):
+    def _seed_fake_world(self):
         pass
 
     
@@ -46,7 +46,7 @@ class MBPO(MBRL, SAC):
         pass
 
 
-    def set_rollout_length(self, n):
+    def set_rollout_length(self):
         pass
 
 
