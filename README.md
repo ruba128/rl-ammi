@@ -41,7 +41,7 @@ brew install ffmpeg
 ### Run an experiment
 cd rl-ammi/
 
-python experiment.py -cfg <cfg_file-.py> -seed <int>
+python experiment.py -cfg <cfg_file-.py> -seed int
 
 
 ## Experiments and Results
