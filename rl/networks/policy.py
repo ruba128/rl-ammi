@@ -4,78 +4,101 @@ import torch as T
 from torch.distributions.normal import Normal
 nn = T.nn
 
-from networks import MLPNet
+from .mlp import MLPNet
+from .distributions import TanhNormal
 
 
+LOG_SIGMA_MAX = 2
+LOG_SIGMA_MIN = -20
+
+
+
+# class StochasticPolicy(MLP):
 class StochasticPolicy(nn.Module):
-    """
-    Stochastic Gaussian Policy
-    """
-    def __init__(self, ip_dim, op_dim, net_config, act_up_lim, act_low_lim, device, seed):
-        print('Initialize Policy!')
-        super().__init__() # To automatically use 'def forward'
-        random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
-        net_arch = net_config['arch']
-        self.reparam_noise = 1e-6
+	
+	def __init__(self, obs_dim, act_dim,
+				act_up_lim, act_low_lim,
+				net_configs, device, seed) -> None:
+		print('Initialize Policy!')
+		random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
+
+		self.device = device
+		net_arch = net_configs['arch']
+		optimizer = 'T.optim.' + net_configs['optimizer']
+		lr = net_configs['lr']
+
+		super().__init__() # To automatically use 'def forward'
+
+		# My suggestions:
+		self.mu_and_log_std_net = MLPNet(obs_dim, 0, net_configs, seed)
+		self.mu = nn.Linear(net_arch[-1], act_dim) # Last layer of Actoe mean
+		self.log_std = nn.Linear(net_arch[-1], act_dim) # Last layer of Actor std
+		# print('Policy: ', self)
+
+		# Define optimizer
+		self.optimizer = eval(optimizer)(self.parameters(), lr)
+
+		self.act_dim = act_dim
+		self.action_scale = T.FloatTensor( 0.5 * (act_up_lim - act_low_lim) ).to(device)
+		self.action_bias =  T.FloatTensor( 0.5 * (act_up_lim + act_low_lim) ).to(device)
         
-        # layers
-        self.model = MLPNet(ip_dim, op_dim, net_config, seed)
-        self.mu = nn.Linear(net_arch[-1], op_dim)
-        self.log_sigma = nn.Linear(net_arch[-1], op_dim)
 
-        # network parameters
-        optimizer = 'nn.optim' + net_configs['critic']['network']['optimizer']
-        lr = self.configs['critic']['network']['lr']
-        self.optimizer = eval(optimizer)(self.parameters(), lr)
+	def get_act_dist_params(self, obs):
+		net_out = self.mu_and_log_std_net(obs)
+		mean = self.mu(net_out)
+		log_std = self.log_std(net_out)
+		log_std = T.clamp(log_std, LOG_SIGMA_MIN, LOG_SIGMA_MAX)
+		std = T.exp(log_std)
+		return mean, std
 
-        # action space dimensions, scaling, and bias
-        self.op_dim = op_dim
-        self.act_scale = T.FloatTensor( 0.5 * (act_up_lim - act_low_lim) ).to(device)
-        self.act_bias =  T.FloatTensor( 0.5 * (act_up_lim + act_low_lim) ).to(device)
+	def prob(self, mean, std, reparameterize):
+		pre_tanh_value = None
+		tanh_normal = TanhNormal(mean, std, device=self.device)
+		if reparameterize is True:
+			pi, pre_tanh_value = tanh_normal.rsample()
+		else:
+			pi, pre_tanh_value = tanh_normal.sample()
+		pi = (pi * self.action_scale) + self.action_bias
+		return pi, pre_tanh_value
 
-    def prob(self, mu, sigma, reparameterize = True):
-        probabilities = Normal(mu, sigma)
+	def logprob(self, pi, mean, std, pre_tanh_value):
+		tanh_normal = TanhNormal(mean, std, device=self.device)
+		log_pi = tanh_normal.log_prob(pi, pre_tanh_value=pre_tanh_value)
+		return log_pi.view(-1,1)
 
-        # reparameterization trick
-        if reparameterize:
-            actions = probabilities.rsample()
-        else:
-            actions = probabilities.sample()         
-        return (actions * self.act_scale) + self.act_bias
+	def deterministic(self, mean):
+		with T.no_grad():
+			pi = (T.tanh(mean) * self.action_scale) + self.action_bias
+		return pi
 
-    def log_prob(self, pi, mu, sigma):
-        probabilities = Normal(mu, sigma)
-        log_probs = probabilities.log_prob(pi)
-        log_probs -= T.log(1-action.pow(2)+self.reparam_noise)
-        log_probs = log_probs.sum(1, keepdim=True)
+	def forward(self,
+				obs,
+				reparameterize=True, # Default: True
+				deterministic=False, # Default: False
+				return_log_pi=False # Default: False
+				):
+		mean, std = self.get_act_dist_params(T.as_tensor(obs, dtype=T.float32).to(self.device))
+		# print('STD: ', std)
+		log_pi = None
+		if deterministic:
+			pi = self.deterministic(mean)
+		else: # stochastic
+			if return_log_pi:
+				pi, pre_tanh_value = self.prob(mean, std, reparameterize)
+				log_pi = self.logprob(pi, mean, std, pre_tanh_value)
+				# print('LogPi:	', log_pi.shape)
+			else:
+				pi, pre_tanh_value = self.prob(mean, std, reparameterize)
+		return pi, log_pi
 
-        return log_probs
-
-    def determinsitic(self,mu):
-        with T.no_grad(): 
-            return (T.tanh(mu) * self.act_scale) + self.act_bias
-
-    def get_mu_sigma(self, o):
-        out_mlp = self.model(o)
-        mu = self.mu(out_mlp)
-        log_sigma = self.sigma(out_mlp)
-        log_sigma = T.clamp(log_sigma, min=self.reparam_noise, max=1)
-        sigma = T.exp(log_std)
-
-        return mu, sigma
+	def step_np(self,
+				obs,
+				reparameterize=True, # Default: True
+				deterministic=False, # Default: False
+				return_log_pi=False # Default: False
+				):
+		pi, log_pi = self.forward(obs, reparameterize, deterministic, return_log_pi)
+		pi = pi.detach().cpu().numpy()
+		return pi, log_pi
 
 
-    def forward(self, o, deterministic= False, return_log_pi=True, reparameterize=True):
-        mu, sigma = self.get_mu_sigma(o)
-        log_pi = None
-
-        if deterministic:
-            pi = self.deterministic(mu)
-        else:
-            if return_log_pi:
-                pi = self.prob(mu, sigma, reparameterize)
-                log_pi = self.log_prob(pi, mu, sigma, reparameterize)
-            else:
-                pi = self.prob(mu, sigma, reparameterize)    
-        
-        return pi, log_pi
