@@ -21,6 +21,11 @@ Algorithm we re-implementing/plannning to re-implement:
 
 ## How to use this code
 ### Installation
+#### Ubuntu 20.04
+
+
+#### MacOS
+
 
 ### Run an experiment
 
