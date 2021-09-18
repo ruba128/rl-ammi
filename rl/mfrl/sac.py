@@ -6,7 +6,7 @@ import torch as T
 import torch.nn.functional as F
 
 from mfrl.mfrl_ import MFRL
-from networks.policy_2 import StochasticPolicy
+from networks.policy import StochasticPolicy
 from networks.q_function_ import SoftQFunction
 
 
@@ -194,7 +194,7 @@ class SAC(MFRL):
             # WandB
             if self.configs['experiment']['WandB']:
                 wandb.log(logs)
-                
+
         self.learn_env.close()
         self.eval_env.close()
 
