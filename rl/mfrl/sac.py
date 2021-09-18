@@ -80,8 +80,8 @@ class SAC(MFRL):
         17. Output: θ1, θ2, φ                                   > Optimized parameters
   
     """
-    def __init__(self, configs, seed):
-        super(SAC, self).__init__(configs, seed)
+    def __init__(self, exp_prefix, configs, seed):
+        super(SAC, self).__init__(exp_prefix, configs, seed)
         print('Initialize SAC Algorithm!')
         self.configs = configs
         self.seed = seed
