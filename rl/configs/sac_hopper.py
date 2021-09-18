@@ -78,7 +78,7 @@ configurations = {
         'WandB': True,
         'print_logs': True,
         'logdir': 'tmp/sac',
-        'capture_video': True,
+        'capture_video': False,
         'video_dir': './video'
     }
     
