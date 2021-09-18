@@ -32,7 +32,7 @@ def main(configs, seed):
         wandb.init(
             name=exp_prefix,
             group=group_name,
-            project='rl-test',
+            project='test',
             # project='rand',
             config=configs
         )
@@ -53,7 +53,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-cfg', type=str)
-    # parser.add_argument('-cfg_path', type=str)
     parser.add_argument('-seed', type=str)
 
     args = parser.parse_args()
