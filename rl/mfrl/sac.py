@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 from mfrl.mfrl_ import MFRL
 from networks.policy import StochasticPolicy
-from networks.q_function_ import SoftQFunction
+from networks.q_function import SoftQFunction
 
 
 
