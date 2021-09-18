@@ -6,7 +6,7 @@ import torch as T
 import torch.nn.functional as F
 
 from mfrl.mfrl_ import MFRL
-from networks.policy_ import StochasticPolicy
+from networks.policy_2 import StochasticPolicy
 from networks.q_function_ import SoftQFunction
 
 
@@ -113,11 +113,11 @@ class SAC(MFRL):
             lr = self.configs['actor']['network']['lr']
             target_entropy = self.configs['actor']['target_entropy']
 
-            self.target_entropy = (
-                - 1.0 * T.prod(
-                    T.tensor(self.learn_env.action_space.shape).to(device)
-                ).item() if target_entropy == 'auto' else target_entropy
-            )
+            if target_entropy == 'auto':
+                self.target_entropy = (
+                    - 1.0 * T.prod(
+                        T.tensor(self.learn_env.action_space.shape).to(device)
+                    ).item())
 
             self.log_alpha = T.zeros(1, requires_grad=True, device=device)
             self.alpha = self.log_alpha.exp().item()
@@ -147,13 +147,13 @@ class SAC(MFRL):
         start_time_real = time.time()
         for n in range(Ni+1, N+1):
             print('\n[ Learning ]')
-            nt, x = 0, (n * NT) / NT
+            print(f'[ Replay Buffer ] Size: {self.replay_buffer.size}, pointer: {self.replay_buffer.ptr}')
+            nt = 0
             learn_start_real = time.time()
-            while nt <= NT:
+            while nt < NT:
                 # Interaction steps
                 for e in range(1, E+1):
-                    o, Z, el, t = self.internact(self.actor_critic.actor,
-                                                 o, Z, el, t)
+                    o, Z, el, t = self.internact(o, Z, el, t)
 
                 # Taking gradient steps after exploration
                 # if n > Ni:
@@ -162,23 +162,21 @@ class SAC(MFRL):
                     Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
                     oldJs = [Jq, Jalpha, Jpi]
                     JQList.append(Jq.item())
-                    JAlphaList.append(Jalpha.item())
-                    AlphaList.append(self.alpha)
                     JPiList.append(Jpi.item())
-                # else:
-                #     JQList.append(0)
-                #     JAlphaList.append(0)
-                #     JPiList.append(0)
+                    if self.configs['actor']['automatic_entropy']:
+                        JAlphaList.append(Jalpha.item())
+                        AlphaList.append(self.alpha)
 
                 nt += E
             logs['time/training'] = time.time() - learn_start_real
             logs['training/objectives/sac/Jq'] = np.mean(JQList)
-            logs['training/objectives/sac/Jalpha'] = np.mean(JAlphaList)
-            logs['training/objectives/sac/alpha'] = np.mean(AlphaList)
             logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
+            if self.configs['actor']['automatic_entropy']:
+                logs['training/objectives/sac/Jalpha'] = np.mean(JAlphaList)
+                logs['training/objectives/sac/alpha'] = np.mean(AlphaList)
 
             eval_start_real = time.time()
-            AvgEZ, AvgES, AvgEL = self.evaluate(self.actor_critic.actor, x)
+            AvgEZ, AvgES, AvgEL = self.evaluate()
             logs['time/evaluation'] = time.time() - eval_start_real
             logs['evaluation/avg_episodic_return'] = AvgEZ
             # logs['evaluation/avg_episodic_score'] = AvgES
@@ -196,6 +194,9 @@ class SAC(MFRL):
             # WandB
             if self.configs['experiment']['WandB']:
                 wandb.log(logs)
+                
+        self.learn_env.close()
+        self.eval_env.close()
 
 
     def trainAC(self, g, batch, oldJs):
@@ -204,9 +205,10 @@ class SAC(MFRL):
         TUI = self.configs['algorithm']['learning']['target_update_interval']
 
         Jq = self.updateQ(batch)
-        Jalpha = self.updateAlpha(batch) if (g % AUI == 0) else oldJs[1]
-        Jpi = self.updatePi(batch) if (g % PUI == 0) else oldJs[2]
-        if g % TUI == 0: self.updateTarget()
+        Jalpha = self.updateAlpha(batch)# if (g % AUI == 0) else oldJs[1]
+        Jpi = self.updatePi(batch)# if (g % PUI == 0) else oldJs[2]
+        # if g % TUI == 0:
+        self.updateTarget()
 
         return Jq, Jalpha, Jpi
 
@@ -232,10 +234,14 @@ class SAC(MFRL):
 
         # Bellman backup for Qs
         with T.no_grad():
-            pi_next, log_pi_next = self.actor_critic.actor(O_next)
+            pi_next, log_pi_next = self.actor_critic.actor(O_next, reparameterize=True, return_log_pi=True)
             A_next = pi_next
             Qs_targ = T.cat(self.actor_critic.critic(O_next, A_next), dim=1)
             min_Q_targ, _ = T.min(Qs_targ, dim=1, keepdim=True)
+            # print('R: ', R.shape)
+            # print('D: ', D.shape)
+            # print('min_Q_targ: ', min_Q_targ.shape)
+            # print('log_pi_next: ', log_pi_next.shape)
             Qs_backup = R + gamma * (1-D) * (min_Q_targ - self.alpha * log_pi_next)
 
         # MSE loss
@@ -260,7 +266,7 @@ class SAC(MFRL):
             O = batch['observations']
 
             with T.no_grad():
-                _, log_pi = self.actor_critic.actor(O)
+                _, log_pi = self.actor_critic.actor(O, return_log_pi=True)
             Jalpha = - (self.log_alpha * (log_pi + self.target_entropy)).mean()
 
             # Gradient Descent
@@ -273,7 +279,7 @@ class SAC(MFRL):
             return Jalpha
         else:
             # Fixed Temprature
-            return 0
+            return 0.0
 
 
     def updatePi(self, batch):
@@ -284,7 +290,7 @@ class SAC(MFRL):
         O = batch['observations']
 
         # Policy Evaluation
-        pi, log_pi = self.actor_critic.actor(O)
+        pi, log_pi = self.actor_critic.actor(O, return_log_pi=True)
         Qs_pi = T.cat(self.actor_critic.critic(O, pi), dim=1)
         min_Q_pi, _ = T.min(Qs_pi, dim=1, keepdim=True)
 
