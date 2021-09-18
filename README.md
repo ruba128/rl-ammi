@@ -25,9 +25,13 @@ Algorithm we re-implementing/plannning to re-implement:
 sudo apt-get install ffmpeg
 
 conda create -n rl-ammi python=3.8
+
 pip install numpy
+
 pip install torch
+
 pip install wandb
+
 pip install gym
 
 #### MacOS
