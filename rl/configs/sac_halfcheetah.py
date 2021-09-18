@@ -2,19 +2,20 @@
 
 configurations = {
     'environment': {
-            'env_name': 'HalfCheetah-v3',
-            'env_type': 'gym-mujoco',
+            'name': 'HalfCheetah-v2',
+            'type': 'gym-mujoco',
             'state_space': 'continuous',
             'action_space': 'continuous',
-            'env_horizon': 1e3,
+            'horizon': 1e3,
         },
 
     'algorithm': {
+        'name': 'SAC',
         'learning': {
-            'epochs': 1000, # N epochs
+            'epochs': 3000, # N epochs
             'epoch_steps': 1000, # NT steps/epoch
-            'init_epochs': 1, # Ni epochs
-            'expl_epochs': 10, # Nx epochs
+            'init_epochs': 10, # Ni epochs
+            # 'expl_epochs': 10, # Nx epochs
 
             'env_steps' : 50, # E: interact E times then train
             'grad_AC_steps': 50, # ACG: ac grad
@@ -72,10 +73,13 @@ configurations = {
         'name': 'seed1',
         'seed': 1,
         'verbose': 0,
+        # 'device': "cpu",
         'device': "cuda:0",
-        'wandb_log': None,
+        'WandB': True,
+        'print_logs': True,
         'logdir': 'tmp/sac',
-        'capture_video': True
+        'capture_video': True,
+        'video_dir': './video'
     }
     
 }

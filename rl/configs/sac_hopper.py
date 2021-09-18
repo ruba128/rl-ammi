@@ -2,7 +2,7 @@
 
 configurations = {
     'environment': {
-            'name': 'Hopper-v3',
+            'name': 'Hopper-v2',
             'type': 'gym-mujoco',
             'state_space': 'continuous',
             'action_space': 'continuous',
@@ -73,8 +73,9 @@ configurations = {
         'name': 'seed1',
         'seed': 1,
         'verbose': 0,
-        'device': "cpu",
-        'wandb_log': True,
+        # 'device': "cpu",
+        'device': "cuda:0",
+        'WandB': True,
         'print_logs': True,
         'logdir': 'tmp/sac',
         'capture_video': True,
