@@ -7,7 +7,7 @@ import random
 
 import numpy as np
 import torch as T
-# import wandb
+import wandb
 
 from mfrl.sac import SAC
 
@@ -28,14 +28,14 @@ def main(configs, seed):
     print(f"\t Random seed: {seed}")
     print('=' * 50)
     
-    # if configs['experiment']['WandB']:
-    #     wandb.init(
-    #         name=exp_prefix,
-    #         group=group_name,
-    #         # project='sac-ammi',
-    #         project='rand',
-    #         config=configs
-    #     )
+    if configs['experiment']['WandB']:
+        wandb.init(
+            name=exp_prefix,
+            group=group_name,
+            project='rl-test',
+            # project='rand',
+            config=configs
+        )
 
     agent = SAC(exp_prefix, configs, seed)
     agent.learn()
@@ -61,6 +61,6 @@ if __name__ == "__main__":
     sys.path.append("./configs")
     config = importlib.import_module(args.cfg)
     seed = int(args.seed)
-    print('configurations: ', config.configurations)
+    # print('configurations: ', config.configurations)
 
     main(config.configurations, seed)
