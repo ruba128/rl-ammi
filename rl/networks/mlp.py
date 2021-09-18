@@ -8,7 +8,7 @@ F = nn.functional
 
 class MLPNet(nn.Module):
     def __init__(self, ip_dim, op_dim, net_configs, seed):
-        print('Initialize MLP Network!')
+        # print('Initialize MLP Network!')
         super().__init__() # To automatically use forward
         random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
 
