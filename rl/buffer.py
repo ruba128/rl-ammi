@@ -31,11 +31,11 @@ class ReplayBuffer: # Done !
         self.terminal_buffer[self.ptr] = d
 
         self.ptr = (self.ptr+1) % self.max_size
-        self.size = min(self.ptr+1, self.max_size)
+        self.size = min(self.size+1, self.max_size)
 
 
-    def sample_batch(self, bs=32):
-        inx = np.random.randint(0, self.max_size, bs)
+    def sample_batch(self, batch_size=32):
+        inx = np.random.randint(0, self.size, size=batch_size)
         batch = dict(observations = self.observation_buffer[inx],
                      actions = self.action_buffer[inx],
                      rewards = self.reward_buffer[inx],
