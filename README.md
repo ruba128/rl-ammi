@@ -22,22 +22,75 @@ Algorithm we re-implementing/plannning to re-implement:
 ## How to use this code
 ### Installation
 #### Ubuntu 20.04
+
+Create a conda environment :
+
+```
+conda create -n rl-ammi python=3.8
+
+pip install numpy
+
+pip install torch
+
+pip install wandb
+
+pip install gym
+```
+
+If you want to run MuJoCo Locomotion tasks, and ShadowHand, you should install [MuJoCo](http://www.mujoco.org/) first (it's open sourced until 31th Oct), and then install [mujoco-py](https://github.com/openai/mujoco-py):
+```
 sudo apt-get install ffmpeg
 
-conda create -n rl-ammi python=3.8
-pip install numpy
-pip install torch
-pip install wandb
-pip install gym
+pip install -U 'mujoco-py<2.1,>=2.0'
+```
+
+If you are using A local GPU of Nvidia and want to record MuJoCo environments [issue link](https://github.com/openai/mujoco-py/issues/187#issuecomment-384905400), run:
+```
+unset LD_PRELOAD
+```
 
 #### MacOS
+
+Create a conda environment :
+
+```
+conda create -n rl-ammi python=3.8
+
+pip install numpy
+
+pip install torch
+
+pip install wandb
+
+pip install gym
+```
+
+If you want to run MuJoCo Locomotion tasks, and ShadowHand, you should install [MuJoCo](http://www.mujoco.org/) first (it's open sourced until 31th Oct), and then install [mujoco-py](https://github.com/openai/mujoco-py):
+```
 brew install ffmpeg
+
+pip install -U 'mujoco-py<2.1,>=2.0'
+```
+
+If you are using A local GPU of Nvidia and want to record MuJoCo environments [issue link](https://github.com/openai/mujoco-py/issues/187#issuecomment-384905400), run:
+```
+unset LD_PRELOAD
+```
+
 
 
 ### Run an experiment
-cd rl-ammi/
-python experiment.py -cfg <cfg_file-.py> -seed <int>
 
+Move into `rl-ammi/` directory, and then:
+
+```
+python experiment.py -cfg <cfg_file-.py> -seed <int>
+```
+for example:
+
+```
+python experiment.py -cfg sac_hopper -seed 1
+```
 
 ## Experiments and Results
 ### Classic Control
