@@ -32,7 +32,7 @@ def main(configs, seed):
         wandb.init(
             name=exp_prefix,
             group=group_name,
-            project='test',
+            project='test-sac',
             # project='rand',
             config=configs
         )
