@@ -12,13 +12,13 @@ configurations = {
     'algorithm': {
         'name': 'SAC',
         'learning': {
-            'epochs': 3000, # N epochs
+            'epochs': 1000, # N epochs
             'epoch_steps': 1000, # NT steps/epoch
-            'init_epochs': 10, # Ni epochs
-            # 'expl_epochs': 10, # Nx epochs
+            'init_epochs': 1, # Ni epochs
+            'expl_epochs': 10, # Nx epochs
 
-            'env_steps' : 50, # E: interact E times then train
-            'grad_AC_steps': 50, # ACG: ac grad
+            'env_steps' : 1, # E: interact E times then train
+            'grad_AC_steps': 1, # ACG: ac grad
             
             'policy_update_interval': 1,
             'alpha_update_interval': 1,
