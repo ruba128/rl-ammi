@@ -19,7 +19,9 @@ def main(configs, seed):
 
     group_name = f"{env_type}-{env_name}"
     now = datetime.datetime.now()
-    exp_prefix = f"{group_name}-{seed}--[{now.year}-{now.month}-{now.day}]-->{now.hour}:{now.minute}:{now.second}"
+    # exp_prefix = f"{group_name}-{seed}--[{now.year}-{now.month}-{now.day}]-->{now.hour}:{now.minute}:{now.second}"
+    exp_prefix = f"{group_name}-{alg_name}-seed:{seed}"
+
 
     print('=' * 50)
     print(f'Starting a new experiment')
@@ -27,13 +29,15 @@ def main(configs, seed):
     print(f"\t Environment: {env_name}")
     print(f"\t Random seed: {seed}")
     print('=' * 50)
+
+    configs['seed'] = seed
     
     if configs['experiment']['WandB']:
         wandb.init(
             name=exp_prefix,
             group=group_name,
-            project='test-sac',
-            # project='rand',
+            # project='test-sac-II',
+            project='rl-ammi',
             config=configs
         )
 
