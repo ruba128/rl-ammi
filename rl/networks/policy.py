@@ -5,7 +5,7 @@ from torch.distributions.normal import Normal
 nn = T.nn
 
 from .mlp import MLPNet
-from .distributions_ import TanhNormal
+from .distributions import TanhNormal
 
 
 LOG_STD_MAX = 2
