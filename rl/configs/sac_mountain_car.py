@@ -15,9 +15,10 @@ configurations = {
             'epochs': 100, # N epochs
             'epoch_steps': 1000, # NT steps/epoch
             'init_epochs': 2, # Ni epochs
+            'expl_epochs': 5, # Nx epochs
 
-            'env_steps' : 1, # E: interact E times then train
-            'grad_AC_steps': 1, # ACG: ac grad
+            'env_steps' : 50, # E: interact E times then train
+            'grad_AC_steps': 50, # ACG: ac grad
             
             'policy_update_interval': 1,
             'alpha_update_interval': 1,
@@ -37,7 +38,7 @@ configurations = {
         'type': 'gaussianpolicy',
         'action_noise': None,
         'alpha': 0.02, # Temprature/Entropy #@#
-        'automatic_entropy': True,
+        'automatic_entropy': False,
         'target_entropy': 'auto',
         'network': {
             'arch': [64,64],
@@ -65,7 +66,7 @@ configurations = {
     'data': {
         'buffer_type': 'simple',
         'buffer_size': int(1e6),
-        'batch_size': 64
+        'batch_size': 100
     },
 
     'experiment': {

@@ -12,13 +12,13 @@ configurations = {
     'algorithm': {
         'name': 'SAC',
         'learning': {
-            'epochs': 1000, # N epochs
+            'epochs': 2000, # N epochs
             'epoch_steps': 1000, # NT steps/epoch
             'init_epochs': 1, # Ni epochs
             'expl_epochs': 10, # Nx epochs
 
-            'env_steps' : 1, # E: interact E times then train
-            'grad_AC_steps': 1, # ACG: ac grad
+            'env_steps' : 50, # E: interact E times then train
+            'grad_AC_steps': 50, # ACG: ac grad
             
             'policy_update_interval': 1,
             'alpha_update_interval': 1,
@@ -29,7 +29,7 @@ configurations = {
             'evaluate': True,
             'eval_deterministic': True,
             'eval_freq': 1, # Evaluate every 'eval_freq' epochs --> Ef
-            'eval_episodes': 5, # Test policy for 'eval_episodes' times --> EE
+            'eval_episodes': 10, # Test policy for 'eval_episodes' times --> EE
             'eval_render_mode': None,
         }
     },
@@ -38,7 +38,7 @@ configurations = {
         'type': 'gaussianpolicy',
         'action_noise': None,
         'alpha': 0.2, # Temprature/Entropy #@#
-        'automatic_entropy': True,
+        'automatic_entropy': False,
         'target_entropy': 'auto',
         'network': {
             'arch': [256,256],
@@ -70,14 +70,11 @@ configurations = {
     },
 
     'experiment': {
-        'name': 'seed1',
-        'seed': 1,
         'verbose': 0,
         # 'device': "cpu",
         'device': "cuda:0",
         'WandB': True,
         'print_logs': True,
-        'logdir': 'tmp/sac',
         'capture_video': True,
         'video_dir': './video'
     }

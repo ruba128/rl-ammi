@@ -2,7 +2,7 @@
 
 configurations = {
     'environment': {
-            'name': 'HalfCheetah-v2',
+            'name': 'Ant-v2',
             'type': 'gym-mujoco',
             'state_space': 'continuous',
             'action_space': 'continuous',
