@@ -11,7 +11,7 @@ class SoftQFunction(nn.Module):
     Soft Q-Function
     """
     def __init__(self, obs_dim, act_dim, net_configs, seed):
-        print('Initialize QFunction!')
+        # print('Initialize QFunction!')
         random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
 
         optimizer = 'T.optim.' + net_configs['optimizer']

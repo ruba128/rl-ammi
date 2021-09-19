@@ -5,21 +5,20 @@ from torch.distributions.normal import Normal
 nn = T.nn
 
 from .mlp import MLPNet
-from .distributions import TanhNormal
+from .distributions_ import TanhNormal
 
 
-LOG_SIGMA_MAX = 2
-LOG_SIGMA_MIN = -20
+LOG_STD_MAX = 2
+LOG_STD_MIN = -20
 
 
 
-# class StochasticPolicy(MLP):
 class StochasticPolicy(nn.Module):
 	
 	def __init__(self, obs_dim, act_dim,
 				act_up_lim, act_low_lim,
 				net_configs, device, seed) -> None:
-		print('Initialize Policy!')
+		# print('Initialize Policy!')
 		random.seed(seed), np.random.seed(seed), T.manual_seed(seed)
 
 		self.device = device
@@ -30,10 +29,9 @@ class StochasticPolicy(nn.Module):
 		super().__init__() # To automatically use 'def forward'
 
 		# My suggestions:
-		self.mu_and_log_std_net = MLPNet(obs_dim, 0, net_configs, seed)
+		self.mean_and_log_std_net = MLPNet(obs_dim, 0, net_configs, seed)
 		self.mu = nn.Linear(net_arch[-1], act_dim) # Last layer of Actoe mean
 		self.log_std = nn.Linear(net_arch[-1], act_dim) # Last layer of Actor std
-		# print('Policy: ', self)
 
 		# Define optimizer
 		self.optimizer = eval(optimizer)(self.parameters(), lr)
@@ -41,13 +39,13 @@ class StochasticPolicy(nn.Module):
 		self.act_dim = act_dim
 		self.action_scale = T.FloatTensor( 0.5 * (act_up_lim - act_low_lim) ).to(device)
 		self.action_bias =  T.FloatTensor( 0.5 * (act_up_lim + act_low_lim) ).to(device)
-        
+
 
 	def get_act_dist_params(self, obs):
-		net_out = self.mu_and_log_std_net(obs)
+		net_out = self.mean_and_log_std_net(obs)
 		mean = self.mu(net_out)
 		log_std = self.log_std(net_out)
-		log_std = T.clamp(log_std, LOG_SIGMA_MIN, LOG_SIGMA_MAX)
+		log_std = T.clamp(log_std, LOG_STD_MIN, LOG_STD_MAX)
 		std = T.exp(log_std)
 		return mean, std
 
@@ -55,7 +53,7 @@ class StochasticPolicy(nn.Module):
 	def prob(self, mean, std, reparameterize):
 		pre_tanh_value = None
 		tanh_normal = TanhNormal(mean, std, device=self.device)
-		if reparameterize is True:
+		if reparameterize:
 			pi, pre_tanh_value = tanh_normal.rsample()
 		else:
 			pi, pre_tanh_value = tanh_normal.sample()
