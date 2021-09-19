@@ -28,7 +28,7 @@ class MFRL:
 
         # Inintialize Learning environment
         self.learn_env = gym.make(name)
-        self._seed_env(self.learn_env, self.seed)
+        self._seed_env(self.learn_env)
         assert isinstance (self.learn_env.action_space, Box), "Works only with continuous action space"
 
         if evaluate:
@@ -37,7 +37,9 @@ class MFRL:
             if self.configs['experiment']['capture_video']:
                 video_dir = self.configs['experiment']['video_dir'] + '/' + self.exp_prefix
                 self.eval_env = RecordVideo(self.eval_env, video_dir, name_prefix='evaluation')  
-            self._seed_env(self.eval_env, self.seed)
+            self._seed_env(self.eval_env)
+        else:
+            self.eval_env = None
 
         # Spaces dimensions
         self.obs_dim = self.learn_env.observation_space.shape[0]
@@ -46,10 +48,10 @@ class MFRL:
         self.act_low_lim = self.learn_env.action_space.low
 
 
-    def _seed_env(self, env, seed):
-        env.seed(seed)
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
+    def _seed_env(self, env):
+        env.seed(self.seed)
+        env.action_space.seed(self.seed)
+        env.observation_space.seed(self.seed)
 
 
     def _set_replay_buffer(self):
@@ -74,7 +76,7 @@ class MFRL:
                 # Random actions
                 a = self.learn_env.action_space.sample()
                 o_next, r, d, info = self.learn_env.step(a)
-                d = True if el == max_el else d
+                d = True if el == max_el else d # Ignore artificial termination
 
                 self.replay_buffer.store_transition(o, a, r, o_next, d)
 
@@ -90,14 +92,17 @@ class MFRL:
         return o, Z, el, t
 
 
-    def internact(self, o, Z, el, t):
+    def internact(self, n, o, Z, el, t): 
+        Nx = self.configs['algorithm']['learning']['expl_epochs']
         max_el = self.configs['environment']['horizon']
 
-        # Use policy
-        a, _ = self.actor_critic.actor.step_np(o)
+        if n > Nx:
+            a, _ = self.actor_critic.actor.step_np(o)
+        else:
+            a = self.learn_env.action_space.sample()
 
         o_next, r, d, _ = self.learn_env.step(a)
-        d = True if el == max_el else d
+        d = False if el == max_el else d # Ignore artificial termination
 
         self.replay_buffer.store_transition(o, a, r, o_next, d)
 

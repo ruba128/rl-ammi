@@ -34,8 +34,7 @@ class ActorCritic: # Done
 
     def _build(self):
         self.actor = self._set_actor()
-        self.critic = self._set_critic()
-        self.critic_target = self._set_critic()
+        self.critic, self.critic_target = self._set_critic(), self._set_critic()
         # parameters will be updated using a weighted average
         for p in self.critic_target.parameters():
             p.requires_grad = False
@@ -116,7 +115,7 @@ class SAC(MFRL):
             if target_entropy == 'auto':
                 self.target_entropy = (
                     - 1.0 * T.prod(
-                        T.tensor(self.learn_env.action_space.shape).to(device)
+                        T.Tensor(self.learn_env.action_space.shape).to(device)
                     ).item())
 
             self.log_alpha = T.zeros(1, requires_grad=True, device=device)
@@ -131,44 +130,51 @@ class SAC(MFRL):
         N = self.configs['algorithm']['learning']['epochs']
         NT = self.configs['algorithm']['learning']['epoch_steps']
         Ni = self.configs['algorithm']['learning']['init_epochs']
+        # Nx = self.configs['algorithm']['learning']['expl_epochs']
 
         E = self.configs['algorithm']['learning']['env_steps']
         G = self.configs['algorithm']['learning']['grad_AC_steps']
 
         batch_size = self.configs['data']['batch_size']
 
-        # o, Z, el, t = self.env.reset(), 0, 0, 0
-        o, Z, el, t = self.initialize_learning(NT, Ni)
+        o, Z, el, t = self.learn_env.reset(), 0, 0, 0
+        # o, Z, el, t = self.initialize_learning(NT, Ni)
         oldJs = [0, 0, 0]
         JQList, JAlphaList, JPiList = [0]*Ni, [0]*Ni, [0]*Ni
         AlphaList = [self.alpha]*Ni
         logs = dict()
         
         start_time_real = time.time()
-        for n in range(Ni+1, N+1):
-            print('\n[ Learning ]')
-            print(f'[ Replay Buffer ] Size: {self.replay_buffer.size}, pointer: {self.replay_buffer.ptr}')
+        for n in range(1, N+1):
+            if n > Ni:
+                print('\n[ Learning ]')
+            else:
+                print(f'\n[ Inintial exploration  Epoch {n} ]')
+                
+            # print(f'[ Replay Buffer ] Size: {self.replay_buffer.size}, pointer: {self.replay_buffer.ptr}')
             nt = 0
             learn_start_real = time.time()
             while nt < NT:
                 # Interaction steps
                 for e in range(1, E+1):
-                    o, Z, el, t = self.internact(o, Z, el, t)
+                    o, Z, el, t = self.internact(n, o, Z, el, t)
 
                 # Taking gradient steps after exploration
-                # if n > Ni:
-                for g in range(1, G+1):
-                    batch = self.replay_buffer.sample_batch(batch_size)
-                    Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
-                    oldJs = [Jq, Jalpha, Jpi]
-                    JQList.append(Jq.item())
-                    JPiList.append(Jpi.item())
-                    if self.configs['actor']['automatic_entropy']:
-                        JAlphaList.append(Jalpha.item())
-                        AlphaList.append(self.alpha)
+                if n > Ni:
+                    # print('policy: ', list(self.actor_critic.actor.parameters())[0])
+                    # print('q: ', list(self.actor_critic.critic.parameters())[0])
+                    for g in range(1, G+1):
+                        batch = self.replay_buffer.sample_batch(batch_size)
+                        Jq, Jalpha, Jpi = self.trainAC(g, batch, oldJs)
+                        oldJs = [Jq, Jalpha, Jpi]
+                        JQList.append(Jq.item())
+                        JPiList.append(Jpi.item())
+                        if self.configs['actor']['automatic_entropy']:
+                            JAlphaList.append(Jalpha.item())
+                            AlphaList.append(self.alpha)
 
                 nt += E
-            logs['time/training'] = time.time() - learn_start_real
+
             logs['training/objectives/sac/Jq'] = np.mean(JQList)
             logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
             if self.configs['actor']['automatic_entropy']:
@@ -190,6 +196,7 @@ class SAC(MFRL):
                 print(f'Epoch {n}')
                 for k, v in logs.items():
                     print(f'{k}: {round(v, 2)}')
+                    # print(f'{k}: {v}')
 
             # WandB
             if self.configs['experiment']['WandB']:
@@ -220,31 +227,30 @@ class SAC(MFRL):
                             + γ Est+1∼D[ Eat+1~πφ(at+1|st+1)[ Qθ¯(st+1, at+1)
                                                 − α log(πφ(at+1|st+1)) ] ] ]
         """
-       
+        gamma = self.configs['critic']['gamma']
+
         O = batch['observations']
         A = batch['actions']
         R = batch['rewards']
         O_next = batch['observations_next']
         D = batch['terminals']
 
-        gamma = self.configs['critic']['gamma']
-
         # Calculate two Q-functions
         Qs = self.actor_critic.critic(O, A)
-
-        # Bellman backup for Qs
+        # # Bellman backup for Qs
         with T.no_grad():
             pi_next, log_pi_next = self.actor_critic.actor(O_next, reparameterize=True, return_log_pi=True)
             A_next = pi_next
-            Qs_targ = T.cat(self.actor_critic.critic(O_next, A_next), dim=1)
+            # Qs_targ = T.cat(self.actor_critic.critic(O_next, A_next), dim=1) # WRONG!! :"D
+            Qs_targ = T.cat(self.actor_critic.critic_target(O_next, A_next), dim=1)
             min_Q_targ, _ = T.min(Qs_targ, dim=1, keepdim=True)
             # print('R: ', R.shape)
             # print('D: ', D.shape)
             # print('min_Q_targ: ', min_Q_targ.shape)
             # print('log_pi_next: ', log_pi_next.shape)
-            Qs_backup = R + gamma * (1-D) * (min_Q_targ - self.alpha * log_pi_next)
+            Qs_backup = R + gamma * (1 - D) * (min_Q_targ - self.alpha * log_pi_next)
 
-        # MSE loss
+        # # MSE loss
         Jq = 0.5 * sum([F.mse_loss(Q, Qs_backup) for Q in Qs])
 
         # Gradient Descent
@@ -310,7 +316,7 @@ class SAC(MFRL):
         with T.no_grad():
             for p, p_targ in zip(self.actor_critic.critic.parameters(),
                                  self.actor_critic.critic_target.parameters()):
-                p_targ.data.copy_(tau * p.data + (1-tau) * p_targ.data)
+                p_targ.data.copy_(tau * p.data + (1 - tau) * p_targ.data)
 
 
 # Report:
