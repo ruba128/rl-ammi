@@ -122,9 +122,10 @@ class MFRL:
             print('[ Evaluation ]')
             EE = self.configs['algorithm']['evaluation']['eval_episodes']
             max_el = self.configs['environment']['horizon']
-            EZ = 0 # Evaluation episodic return
+            # EZ = 0 # Evaluation episodic return
+            EZ = []
             # ES = 0 # Evaluation episodic score
-            EL = 0 # Evaluation episodic 
+            EL = [] # Evaluation episodic 
 
             for ee in range(1, EE+1):
                 o, d, Z, S, el = self.eval_env.reset(), False, 0, 0, 0
@@ -136,13 +137,14 @@ class MFRL:
                     Z += r
                     # S += info['score']
                     el += 1
-                EZ += Z
-                # ES += S
-                EL += el
+                # EZ += Z
+                EZ.append(Z)
+                ES = 0#.append(S)
+                EL.append(el)
 
-            AvgEZ = EZ / EE
-            AvgES = 0 # ES / EE
-            AvgEL = EL / EE
+            # AvgEZ = EZ / EE
+            # AvgES = 0 # ES / EE
+            # AvgEL = EL / EE
 
-        return AvgEZ, AvgES, AvgEL
+        return EZ, ES, EL
 

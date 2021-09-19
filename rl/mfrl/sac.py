@@ -130,7 +130,7 @@ class SAC(MFRL):
         N = self.configs['algorithm']['learning']['epochs']
         NT = self.configs['algorithm']['learning']['epoch_steps']
         Ni = self.configs['algorithm']['learning']['init_epochs']
-        # Nx = self.configs['algorithm']['learning']['expl_epochs']
+        Nx = self.configs['algorithm']['learning']['expl_epochs']
 
         E = self.configs['algorithm']['learning']['env_steps']
         G = self.configs['algorithm']['learning']['grad_AC_steps']
@@ -146,10 +146,12 @@ class SAC(MFRL):
         
         start_time_real = time.time()
         for n in range(1, N+1):
-            if n > Ni:
-                print('\n[ Learning ]')
+            if n > Nx:
+                print(f'\n[ Epoch {n}   Learning ]')
+            elif n > Ni:
+                print(f'\n[ Epoch {n}   Inintial Exploration + Learning ]')
             else:
-                print(f'\n[ Inintial exploration  Epoch {n} ]')
+                print(f'\n[ Epoch {n}   Inintial Exploration ]')
                 
             # print(f'[ Replay Buffer ] Size: {self.replay_buffer.size}, pointer: {self.replay_buffer.ptr}')
             nt = 0
@@ -175,6 +177,7 @@ class SAC(MFRL):
 
                 nt += E
 
+            logs['time/training'] = time.time() - learn_start_real
             logs['training/objectives/sac/Jq'] = np.mean(JQList)
             logs['training/objectives/sac/Jpi'] = np.mean(JPiList)
             if self.configs['actor']['automatic_entropy']:
@@ -182,11 +185,14 @@ class SAC(MFRL):
                 logs['training/objectives/sac/alpha'] = np.mean(AlphaList)
 
             eval_start_real = time.time()
-            AvgEZ, AvgES, AvgEL = self.evaluate()
+            EZ, ES, EL = self.evaluate()
             logs['time/evaluation'] = time.time() - eval_start_real
-            logs['evaluation/avg_episodic_return'] = AvgEZ
-            # logs['evaluation/avg_episodic_score'] = AvgES
-            logs['evaluation/avg_episodic_length'] = AvgEL
+            # logs['evaluation/avg_episodic_return'] = AvgEZ
+            logs['evaluation/episodic_return_mean'] = np.mean(EZ)
+            logs['evaluation/episodic_return_std'] = np.std(EZ)
+            # logs['evaluation/episodic_score_mean'] = np.mean(EZ)
+            # logs['evaluation/episodic_score_std'] = np.std(EZ)
+            logs['evaluation/episodic_length_mean'] = np.mean(EL)
             
             logs['time/total'] = time.time() - start_time_real
 
