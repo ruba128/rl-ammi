@@ -7,7 +7,7 @@ import random
 import torch as T
 import wandb
 
-from mfrl.sac import SAC
+from rl.mfrl.sac import SAC
 
 
 
@@ -44,8 +44,8 @@ def main(configs, seed):
     agent = SAC(exp_prefix, configs, seed)
     agent.learn()
 
-    T.save(agent.actor_critic.actor,
-    f'./agents/agent-{env_name}-{alg_name}-seed:{seed}.pth.tar')
+    # T.save(agent.actor_critic.actor,
+    # f'./agents/agent-{env_name}-{alg_name}-seed:{seed}.pth.tar')
 
     print('\n')
     print('End of the experiment')
