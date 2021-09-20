@@ -92,6 +92,18 @@ for example:
 python experiment.py -cfg sac_hopper -seed 1
 ```
 
+### Evaluate an Agent
+To evaluate a saved policy model, run the following command:
+```
+python evaluate_agent.py -env <env_name> -alg <alg_name> -seed <int> -EE <int>
+```
+for example:
+
+```
+python evaluate_agent.py -env Walker2d-v2 -alg SAC -seed 1 -EE 5
+```
+
+
 ## Experiments and Results
 ### Classic Control
 
