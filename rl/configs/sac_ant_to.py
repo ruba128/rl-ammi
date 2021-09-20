@@ -2,7 +2,7 @@
 
 configurations = {
     'environment': {
-            'name': 'Hopper-v2',
+            'name': 'AntTruncatedObs-v2',
             'type': 'gym-mujoco',
             'state_space': 'continuous',
             'action_space': 'continuous',
@@ -73,7 +73,7 @@ configurations = {
         'verbose': 0,
         # 'device': "cpu",
         'device': "cuda:0",
-        'WandB': False,
+        'WandB': True,
         'print_logs': True,
     }
     
