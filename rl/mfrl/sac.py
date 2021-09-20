@@ -190,8 +190,8 @@ class SAC(MFRL):
             # logs['evaluation/avg_episodic_return'] = AvgEZ
             logs['evaluation/episodic_return_mean'] = np.mean(EZ)
             logs['evaluation/episodic_return_std'] = np.std(EZ)
-            # logs['evaluation/episodic_score_mean'] = np.mean(EZ)
-            # logs['evaluation/episodic_score_std'] = np.std(EZ)
+            # logs['evaluation/episodic_score_mean'] = np.mean(ES)
+            # logs['evaluation/episodic_score_std'] = np.std(ES)
             logs['evaluation/episodic_length_mean'] = np.mean(EL)
             
             logs['time/total'] = time.time() - start_time_real
@@ -250,10 +250,6 @@ class SAC(MFRL):
             # Qs_targ = T.cat(self.actor_critic.critic(O_next, A_next), dim=1) # WRONG!! :"D
             Qs_targ = T.cat(self.actor_critic.critic_target(O_next, A_next), dim=1)
             min_Q_targ, _ = T.min(Qs_targ, dim=1, keepdim=True)
-            # print('R: ', R.shape)
-            # print('D: ', D.shape)
-            # print('min_Q_targ: ', min_Q_targ.shape)
-            # print('log_pi_next: ', log_pi_next.shape)
             Qs_backup = R + gamma * (1 - D) * (min_Q_targ - self.alpha * log_pi_next)
 
         # # MSE loss

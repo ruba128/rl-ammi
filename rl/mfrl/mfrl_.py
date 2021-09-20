@@ -1,6 +1,5 @@
 import gym
 from gym.spaces import Box
-from gym.wrappers import RecordVideo
 
 from buffer import ReplayBuffer
 
@@ -34,9 +33,6 @@ class MFRL:
         if evaluate:
             # Ininialize Evaluation environment
             self.eval_env = gym.make(name)
-            if self.configs['experiment']['capture_video']:
-                video_dir = self.configs['experiment']['video_dir'] + '/' + self.exp_prefix
-                self.eval_env = RecordVideo(self.eval_env, video_dir, name_prefix='evaluation')  
             self._seed_env(self.eval_env)
         else:
             self.eval_env = None
@@ -147,4 +143,3 @@ class MFRL:
             # AvgEL = EL / EE
 
         return EZ, ES, EL
-
