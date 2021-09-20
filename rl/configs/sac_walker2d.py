@@ -73,10 +73,8 @@ configurations = {
         'verbose': 0,
         # 'device': "cpu",
         'device': "cuda:0",
-        'WandB': True,
+        'WandB': False,
         'print_logs': True,
-        'capture_video': True,
-        'video_dir': './video'
     }
     
 }

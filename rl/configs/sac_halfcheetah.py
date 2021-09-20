@@ -75,8 +75,6 @@ configurations = {
         'device': "cuda:0",
         'WandB': True,
         'print_logs': True,
-        'capture_video': True,
-        'video_dir': './video'
     }
     
 }

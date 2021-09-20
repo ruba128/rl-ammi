@@ -17,8 +17,8 @@ configurations = {
             'init_epochs': 1, # Ni epochs
             'expl_epochs': 10, # Nx epochs
 
-            'env_steps' : 50, # E: interact E times then train
-            'grad_AC_steps': 50, # ACG: ac grad
+            'env_steps' : 1, # E: interact E times then train
+            'grad_AC_steps': 1, # ACG: ac grad
             
             'policy_update_interval': 1,
             'alpha_update_interval': 1,
@@ -75,8 +75,6 @@ configurations = {
         'device': "cuda:0",
         'WandB': True,
         'print_logs': True,
-        'capture_video': True,
-        'video_dir': './video'
     }
     
 }
