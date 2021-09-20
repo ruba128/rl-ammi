@@ -4,8 +4,8 @@ import torch as T
 from torch.distributions.normal import Normal
 nn = T.nn
 
-from .mlp import MLPNet
-from .distributions import TanhNormal
+from rl.networks.mlp import MLPNet
+from rl.networks.distributions import TanhNormal
 
 
 LOG_STD_MAX = 2
