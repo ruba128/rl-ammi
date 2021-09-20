@@ -1,15 +1,15 @@
 import sys
 import argparse
 import importlib
-import time
 import datetime
 import random
 
-import numpy as np
 import torch as T
 import wandb
 
 from mfrl.sac import SAC
+
+
 
 def main(configs, seed):
     print('\n')
@@ -18,7 +18,7 @@ def main(configs, seed):
     env_type = configs['environment']['type']
 
     group_name = f"{env_type}-{env_name}"
-    now = datetime.datetime.now()
+    # now = datetime.datetime.now()
     # exp_prefix = f"{group_name}-{seed}--[{now.year}-{now.month}-{now.day}]-->{now.hour}:{now.minute}:{now.second}"
     exp_prefix = f"{group_name}-{alg_name}-seed:{seed}"
 
@@ -37,13 +37,15 @@ def main(configs, seed):
             name=exp_prefix,
             group=group_name,
             # project='test-sac-II',
-            project='rl-ammi',
+            project='rl-ammi-2',
             config=configs
         )
 
     agent = SAC(exp_prefix, configs, seed)
     agent.learn()
-    # agent.evaluate()
+
+    T.save(agent.actor_critic.actor,
+    f'./agents/agent-{env_name}-{alg_name}-seed:{seed}.pth.tar')
 
     print('\n')
     print('End of the experiment')
@@ -64,6 +66,5 @@ if __name__ == "__main__":
     sys.path.append("./configs")
     config = importlib.import_module(args.cfg)
     seed = int(args.seed)
-    # print('configurations: ', config.configurations)
 
     main(config.configurations, seed)
