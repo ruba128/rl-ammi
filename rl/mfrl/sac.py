@@ -5,9 +5,9 @@ import numpy as np
 import torch as T
 import torch.nn.functional as F
 
-from mfrl.mfrl_ import MFRL
-from networks.policy import StochasticPolicy
-from networks.q_function import SoftQFunction
+from rl.mfrl.mfrl_ import MFRL
+from rl.networks.policy import StochasticPolicy
+from rl.networks.q_function import SoftQFunction
 
 
 
@@ -143,6 +143,7 @@ class SAC(MFRL):
         JQList, JAlphaList, JPiList = [0]*Ni, [0]*Ni, [0]*Ni
         AlphaList = [self.alpha]*Ni
         logs = dict()
+        lastEZ, lastES = 0, 0
         
         start_time_real = time.time()
         for n in range(1, N+1):
@@ -195,6 +196,14 @@ class SAC(MFRL):
             logs['evaluation/episodic_length_mean'] = np.mean(EL)
             
             logs['time/total'] = time.time() - start_time_real
+
+            if n > (N - 50) and np.mean(EZ) > lastEZ:
+                print('[ Epoch {n}   Agent Saving ]')
+                env_name = self.configs['environment']['name']
+                alg_name = self.configs['algorithm']['name']
+                T.save(self.actor_critic.actor,
+                f'./agents/{env_name}-{alg_name}-seed:{self.seed}-epoch:{n}.pth.tar')
+                lastEZ = np.mean(EZ)
 
             # Printing logs
             if self.configs['experiment']['print_logs']:

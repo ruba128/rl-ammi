@@ -1,7 +1,8 @@
 import gym
 from gym.spaces import Box
 
-from buffer import ReplayBuffer
+import rl.environments
+from rl.buffer import ReplayBuffer
 
 
 class MFRL:
