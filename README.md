@@ -23,10 +23,12 @@ Algorithm we re-implementing/plannning to re-implement:
 ### Installation
 #### Ubuntu 20.04
 
-Create a conda environment :
+Move into `rl-ammi` directory, and then run the following:
 
 ```
 conda create -n rl-ammi python=3.8
+
+pip install -e .
 
 pip install numpy
 
@@ -51,10 +53,12 @@ unset LD_PRELOAD
 
 #### MacOS
 
-Create a conda environment :
+Move into `rl-ammi` directory, and then run the following:
 
 ```
 conda create -n rl-ammi python=3.8
+
+pip install -e .
 
 pip install numpy
 
